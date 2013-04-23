@@ -1,8 +1,9 @@
-function [outputImages outputPrefix] = deNoise2D_NLM( noisyImg, config )
+function [outputImages outputPrefix] = deNoise2D_NLM_stationary_fix(noisyImg, config)
 
 kSize = config.kSize;
 searchSize = config.searchSize;
 h = config.h;
+varianceCutoff = config.varianceCutoff;
 noiseSig = config.noiseSig;
 
 halfSearchSize = floor( searchSize/2 );
@@ -13,6 +14,7 @@ hSq = h*h;
 nPix = M*N;
 
 deNoisedImg = noisyImg;
+deNoisedImgNLM = noisyImg;
 
 borderSize = halfKSize+halfSearchSize+1;
 
@@ -37,7 +39,7 @@ for j=borderSize:M-borderSize
                     vI-halfKSize : vI+halfKSize  );
                 
                 distSq = ( kernel - v ) .* ( kernel - v );
-                distSq = sum( distSq(:) ); %L2 norm squared
+                distSq = sum( distSq(:) );
                 
                 localWeights( jP+1, iP+1 ) = exp( - distSq / hSq );
                 
@@ -47,9 +49,20 @@ for j=borderSize:M-borderSize
         localWeights = localWeights / sum( localWeights(:) );
         
         subImg = noisyImg( j-halfSearchSize : j+halfSearchSize, ...
-            i-halfSearchSize : i+halfSearchSize );
+                            i-halfSearchSize : i+halfSearchSize );
+        NLestimatedU = sum( sum( localWeights .* subImg ) );
+        NLestimatedUSq = sum( sum( localWeights .* (subImg.^2) ) );
+        NLestimatedSigmaSq = NLestimatedUSq - NLestimatedU.^2;
         
-        deNoisedImg(j,i) = sum( sum( localWeights .* subImg ) );
+        deNoisedImgNLM(j,i) = NLestimatedU;
+        sigmaSqMetric = NLestimatedSigmaSq;
+        if sigmaSqMetric > varianceCutoff
+            %disp(['Detected high sigma of ', num2str(sigmaSqMetric), ' at pixel ', num2str(j), ', ' num2str(i)]);
+            deNoisedImg(j,i) = NLestimatedU + max((sigmaSqMetric - noiseSig^2)/sigmaSqMetric, 0)*(noisyImg(j,i)-NLestimatedU);
+        else
+            %disp(['Detected low sigma of ', num2str(sigmaSqMetric), ' at pixel ', num2str(j), ', ' num2str(i)]);
+            deNoisedImg(j,i) = NLestimatedU;
+        end
     end
     
     if mod(j,50)==0 imshow( deNoisedImg, [] ); end;
@@ -58,8 +71,10 @@ end
 
 outputImages = struct();
 outputImages.deNoisedImage = deNoisedImg;
+outputImages.deNoisedImageNLM = deNoisedImgNLM;
 
 outputPrefix = struct();
-outputPrefix.deNoisedImage = 'NLM_';
+outputPrefix.deNoisedImage = 'NLM_stat_fix_';
+outputPrefix.deNoisedImageNLM = 'NLM_only_';
 
 end
