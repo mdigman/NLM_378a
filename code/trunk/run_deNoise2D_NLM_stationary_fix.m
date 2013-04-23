@@ -12,4 +12,8 @@ config.noiseMean = 0;
 % STATIONARY FIX CONFIGURATION VALUES
 config.varianceCutoff = 5*config.noiseSig^2;
 
-test_suite(algorithmHandle, config);
+if isunix
+  test_suite_unix(algorithmHandle, config);
+else
+  test_suite(algorithmHandle, config);
+end
