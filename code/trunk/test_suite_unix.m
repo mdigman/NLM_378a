@@ -1,4 +1,4 @@
-function test_suite_mac( algorithmHandle, config )
+function test_suite_unix( algorithmHandle, config )
 inDir = '../../data/images';
 
 % TEST SUITE
@@ -37,7 +37,7 @@ for i=1:nFiles
     imwrite( noisyImg, [outDir,'/noisy_',imgFile] );
     
     tic
-    [outputImages outputPrefix] = algorithmHandle(noisyImg, config);
+    [outputImages, outputPrefix] = algorithmHandle(noisyImg, config);
     runtime = toc;
 
     outputFields = fields(outputImages);
