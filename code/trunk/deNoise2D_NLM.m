@@ -18,6 +18,10 @@ borderSize = halfKSize+halfSearchSize+1;
 
 localWeights = zeros( searchSize, searchSize );
 
+%Define the gaussian kernel for the gaussian weighted L2-norm
+a = 0.5*(kSize-1)/2;
+gaussKernel = fspecial('gaussian', kSize, a);
+
 for j=borderSize:M-borderSize
     if mod(j,20)==0 disp(['Working on row ', num2str(j)]); end;
     
@@ -37,9 +41,10 @@ for j=borderSize:M-borderSize
                     vI-halfKSize : vI+halfKSize  );
                 
                 distSq = ( kernel - v ) .* ( kernel - v );
-                distSq = sum( distSq(:) ); %L2 norm squared
+                weightedDistSq = distSq.*gaussKernel;
+                weightedDistSq = sum( weightedDistSq(:) ); %L2 norm squared
                 
-                localWeights( jP+1, iP+1 ) = exp( - distSq / hSq );
+                localWeights( jP+1, iP+1 ) = exp( - weightedDistSq / hSq );
                 
             end
         end

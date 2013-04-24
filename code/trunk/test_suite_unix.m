@@ -6,7 +6,6 @@ noiseSig = config.noiseSig; %standard deviation!
 noiseMean = config.noiseMean;
 
 files = strsplit(ls(inDir),' '); %Put each name into cell array
-%files = files(3:end);
 
 sFiles = size(files);
 nFiles = sFiles(2);
