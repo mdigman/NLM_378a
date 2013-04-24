@@ -27,19 +27,19 @@ for j=borderSize:M-borderSize
         kernel = noisyImg( j-halfKSize:j+halfKSize, ...
             i-halfKSize:i+halfKSize );
         
-        for jP=0:searchSize-1
-            for iP=0:searchSize-1
-                %disp(['(jP,iP): (',num2str(jP),',',num2str(iP),')']);
+        parfor jP=1:searchSize
+            for iP=1:searchSize
+                %disp(['(jP,iP): (',num2str(jP-1),',',num2str(iP-1),')']);
                 
-                vJ = j-halfSearchSize+jP;
-                vI = i-halfSearchSize+iP;
+                vJ = j-halfSearchSize+(jP-1);
+                vI = i-halfSearchSize+(iP-1);
                 v = noisyImg( vJ-halfKSize : vJ+halfKSize, ...
-                    vI-halfKSize : vI+halfKSize  );
+                    vI-halfKSize : vI+halfKSize);
                 
                 distSq = ( kernel - v ) .* ( kernel - v );
                 distSq = sum( distSq(:) ); %L2 norm squared
                 
-                localWeights( jP+1, iP+1 ) = exp( - distSq / hSq );
+                localWeights( jP, iP) = exp( - distSq / hSq );
                 
             end
         end

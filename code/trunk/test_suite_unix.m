@@ -9,7 +9,8 @@ files = strsplit(ls(inDir),' '); %Put each name into cell array
 %files = files(3:end);
 
 sFiles = size(files);
-nFiles = sFiles(2);
+disp('only processing first file!');
+nFiles = 1; %sFiles(2);
 
 dateTime = datestr(now);
 dateTime = strrep(dateTime, ':', '');
