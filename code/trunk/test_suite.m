@@ -1,6 +1,9 @@
 function test_suite( algorithmHandle, config )
 inDir = '..\..\data\images';
 
+% Add path for parallel progress tracking
+addpath('./matlab-ParforProgress2')
+
 % TEST SUITE
 noiseSig = config.noiseSig; %standard deviation!
 noiseMean = config.noiseMean;
@@ -36,8 +39,10 @@ for i=1:nFiles
     noisyImg = img + noise;
     imwrite( noisyImg, [outDir,'\noisy_',imgFile] );
     
+    config.fileName = imgFile;
+    
     tic
-    [outputImages outputPrefix] = algorithmHandle(noisyImg, config);
+    [outputImages, outputPrefix] = algorithmHandle(noisyImg, config);
     runtime = toc;
 
     outputFields = fields(outputImages);

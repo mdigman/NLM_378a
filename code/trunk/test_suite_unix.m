@@ -1,6 +1,9 @@
 function test_suite_unix( algorithmHandle, config )
 inDir = '../../data/images';
 
+% Add path for parallel progress tracking
+addpath('./matlab-ParforProgress2')
+
 % TEST SUITE
 noiseSig = config.noiseSig; %standard deviation!
 noiseMean = config.noiseMean;
@@ -9,8 +12,7 @@ files = strsplit(ls(inDir),' '); %Put each name into cell array
 %files = files(3:end);
 
 sFiles = size(files);
-disp('only processing first file!');
-nFiles = 1; %sFiles(2);
+nFiles = sFiles(2);
 
 dateTime = datestr(now);
 dateTime = strrep(dateTime, ':', '');
@@ -36,6 +38,8 @@ for i=1:nFiles
     noise = normrnd( noiseMean, noiseSig, sImg(1), sImg(2) );
     noisyImg = img + noise;
     imwrite( noisyImg, [outDir,'/noisy_',imgFile] );
+    
+    config.fileName = imgFile;
     
     tic
     [outputImages, outputPrefix] = algorithmHandle(noisyImg, config);

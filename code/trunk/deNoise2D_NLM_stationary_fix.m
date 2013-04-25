@@ -18,16 +18,33 @@ deNoisedImgNLM = noisyImg;
 
 borderSize = halfKSize+halfSearchSize+1;
 
-localWeights = zeros( searchSize, searchSize );
+%% initialize progress tracker
+try % Initialization
+    ppm = ParforProgressStarter2(config.fileName, M-2*borderSize, 0.1);
+catch me % make sure "ParforProgressStarter2" didn't get moved to a different directory
+    if strcmp(me.message, 'Undefined function or method ''ParforProgressStarter2'' for input arguments of type ''char''.')
+        error('ParforProgressStarter2 not in path.');
+    else
+        % this should NEVER EVER happen.
+        msg{1} = 'Unknown error while initializing "ParforProgressStarter2":';
+        msg{2} = me.message;
+        print_error_red(msg);
+        % backup solution so that we can still continue.
+        ppm.increment = nan(1, N);
+    end
+end
 
-for j=borderSize:M-borderSize
-    if mod(j,20)==0 disp(['Working on row ', num2str(j)]); end;
-    
+%% perform denoising
+parfor j=borderSize:M-borderSize
     for i=borderSize:N-borderSize
-        %if mod(i,100)==0 disp(['Working on col ', num2str(i)]); end;
-        
+        % As far as I (Thomas) know, noisyImg can't be easily sliced to
+        % improve performance. Instead, one would have to use spmd to do
+        % such things. However, most of the time is spent in the two inner 
+        % loops anyway
         kernel = noisyImg( j-halfKSize:j+halfKSize, ...
             i-halfKSize:i+halfKSize );
+
+        localWeights = zeros( searchSize, searchSize );
         
         for jP=0:searchSize-1
             for iP=0:searchSize-1
@@ -65,10 +82,21 @@ for j=borderSize:M-borderSize
         end
     end
     
-    if mod(j,50)==0 imshow( deNoisedImg, [] ); end;
-    drawnow;
+    ppm.increment(j);
 end
 
+%% clean up parallel
+try % use try / catch here, since delete(struct) will raise an error.
+    delete(ppm);
+catch me %#ok<NASGU>
+end
+
+%% show output image
+imshow( deNoisedImg, [] );
+drawnow; % make sure it's displayed
+pause(0.01); % make sure it's displayed
+
+%% copy output images
 outputImages = struct();
 outputImages.deNoisedImage = deNoisedImg;
 outputImages.deNoisedImageNLM = deNoisedImgNLM;
