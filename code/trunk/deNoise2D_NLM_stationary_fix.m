@@ -1,4 +1,4 @@
-function [outputImages outputPrefix] = deNoise2D_NLM_stationary_fix(noisyImg, config)
+function output = deNoise2D_NLM_stationary_fix(noisyImg, config, origImg)
 
 kSize = config.kSize;
 searchSize = config.searchSize;
@@ -14,7 +14,6 @@ hSq = h*h;
 nPix = M*N;
 
 deNoisedImg = noisyImg;
-deNoisedImgNLM = noisyImg;
 
 borderSize = halfKSize+halfSearchSize+1;
 
@@ -54,7 +53,6 @@ for j=borderSize:M-borderSize
         NLestimatedUSq = sum( sum( localWeights .* (subImg.^2) ) );
         NLestimatedSigmaSq = NLestimatedUSq - NLestimatedU.^2;
         
-        deNoisedImgNLM(j,i) = NLestimatedU;
         sigmaSqMetric = NLestimatedSigmaSq;
         if sigmaSqMetric > varianceCutoff
             %disp(['Detected high sigma of ', num2str(sigmaSqMetric), ' at pixel ', num2str(j), ', ' num2str(i)]);
@@ -69,12 +67,13 @@ for j=borderSize:M-borderSize
     drawnow;
 end
 
-outputImages = struct();
-outputImages.deNoisedImage = deNoisedImg;
-outputImages.deNoisedImageNLM = deNoisedImgNLM;
+output = struct();
+output.deNoisedImg = deNoisedImg;
+output.prefix = 'NLM_stat_fix_';
 
-outputPrefix = struct();
-outputPrefix.deNoisedImage = 'NLM_stat_fix_';
-outputPrefix.deNoisedImageNLM = 'NLM_only_';
+output.mse = -1;
+if nargin > 2
+  output.mse = calculateMSE( origImg, deNoisedImg, borderSize );
+else
 
 end
