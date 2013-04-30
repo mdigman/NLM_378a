@@ -19,7 +19,7 @@ function [output outputPrefix] = deNoise2D_NLM( noisyImg, config, origImg )
   localWeights = zeros( searchSize, searchSize );
 
   for j=borderSize:M-borderSize
-    if mod(j,5)==0 disp(['Working on row ', num2str(j)]); end;
+    if mod(j,10)==0 disp(['Working on row ', num2str(j)]); end;
 
     for i=borderSize:N-borderSize
       %if mod(i,100)==0 disp(['Working on col ', num2str(i)]); end;

@@ -29,7 +29,7 @@ function test_suite( algorithmHandle, config )
   nCallSeq = numel( callSeq );
   runFile = callSeq( nCallSeq ).file;
   copyfile( runFile, [outDir,fileSepChar,runFile] );
-  
+
   logID = fopen([outDir,fileSepChar,'log.csv'], 'w');
   fprintf( logID, 'filename, runtime (sec), MSE\n');
 
@@ -60,6 +60,10 @@ function test_suite( algorithmHandle, config )
     imwrite( output.deNoisedImg, [outDir, fileSepChar, ...
       output.prefix, imgFile] );
 
+    magDiffImg = abs( img - output.deNoisedImg );
+    imwrite( magDiffImg, [outDir, fileSepChar, output.prefix, ...
+      '_diff_',imgFile] );
+    
     fprintf( logID, '%s, %f, %f\n', imgFile, runtime, output.mse );
   end
 
