@@ -1,52 +1,68 @@
 function test_suite( algorithmHandle, config )
-inDir = '..\..\data\images';
 
-% TEST SUITE
-noiseSig = config.noiseSig; %standard deviation!
-noiseMean = config.noiseMean;
+  if isunix
+    fileSepChar = '/';
+    inDir = ['../../data/images'];
+    files = strsplit(ls(inDir),' '); %Put each name into cell array
+    sFiles = size(files);
+    nFiles = sFiles(2);
+  else
+    fileSepChar = '\';
+    inDir = ['..\..\data\images'];
+    files = ls(inDir);
+    files = files(3:end,:);
+    sFiles = size(files);
+    nFiles = sFiles(1);
+  end
 
-files = ls(inDir);
-files = files(3:end,:);
+  noiseSig = config.noiseSig; %standard deviation
+  noiseMean = config.noiseMean;
 
-sFiles = size(files);
-nFiles = sFiles(1);
+  dateTime = datestr(now);
+  dateTime = strrep(dateTime, ':', '');
+  dateTime = strrep(dateTime, '-', '');
+  dateTime = strrep(dateTime, ' ', '_');
+  outDir = ['output_',dateTime];
+  mkdir(outDir);
 
-dateTime = datestr(now);
-dateTime = strrep(dateTime, ':', '');
-dateTime = strrep(dateTime, '-', '');
-dateTime = strrep(dateTime, ' ', '_');
-outDir = ['output_',dateTime];
-mkdir(outDir);
+  callSeq = dbstack();
+  nCallSeq = numel( callSeq );
+  runFile = callSeq( nCallSeq ).file;
+  copyfile( runFile, [outDir,fileSepChar,runFile] );
+  
+  logID = fopen([outDir,fileSepChar,'log.csv'], 'w');
+  fprintf( logID, 'filename, runtime (sec), MSE\n');
 
-logID = fopen([outDir,'\log.txt'], 'w');
+  for i=1:nFiles
+    if isunix
+      imgFile = files{i};
+    else
+      imgFile = strtrim( files(i,:) );
+    end
+    img = imread( [inDir,fileSepChar,imgFile] );
 
-for i=1:nFiles
-    imgFile = strtrim( files(i,:) );
-    img = imread( [inDir,'\',imgFile] );
-    
     nDimsImg = ndims( img );
     if nDimsImg>2
         img = rgb2gray( img );
     end
-    
+
     img = double( img )/255.;
-    
+
     sImg = size( img );
     noise = normrnd( noiseMean, noiseSig, sImg(1), sImg(2) );
     noisyImg = img + noise;
-    imwrite( noisyImg, [outDir,'\noisy_',imgFile] );
-    
+    imwrite( noisyImg, [outDir,fileSepChar,'noisy_',imgFile] );
+
     tic
-    [outputImages outputPrefix] = algorithmHandle(noisyImg, config);
+    output = algorithmHandle(noisyImg, config, img);
     runtime = toc;
 
-    outputFields = fields(outputImages);
-    for i=1:length(outputFields)
-        imwrite( outputImages.(outputFields{i}), [outDir, '\', outputPrefix.(outputFields{i}), imgFile] );
-    end
-    fprintf( logID, '%s runtime (sec): %f\n', imgFile, runtime );
-end
+    imwrite( output.deNoisedImg, [outDir, fileSepChar, ...
+      output.prefix, imgFile] );
 
-fclose(logID);
+    fprintf( logID, '%s, %f, %f\n', imgFile, runtime, output.mse );
+  end
+
+  fclose(logID);
 
 end
