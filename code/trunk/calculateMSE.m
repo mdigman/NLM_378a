@@ -1,4 +1,3 @@
-
 function mse = calculateMSE( origImg, deNoisedImg, border )
 
   if nargin < 3

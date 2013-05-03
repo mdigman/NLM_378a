@@ -1,4 +1,4 @@
-function run_deNoise2D_NLM
+function run_paper_results_NLM
 
 % FUNCTION HANDLE
 algorithmHandle = @deNoise2D_NLM;
@@ -14,10 +14,29 @@ config.noiseMean = 0;
 % TEST SUITE CONFIGURATION
 config.testSuiteAddNoise = true; %if false, will not add noise to the image. used when imputting images with noise already present.
 config.testSuiteUseExternalImage = false; %if true, will not read in any images, but will process based on what you pass in
-%config.testSuiteExternalImage = imread('../../data/images/lena.png');
-%UseExternalImage flag overrides UseImages flag
-config.testSuiteUseImages = {}; %ex: testSuiteUseImages = {'lena.png', 'boat.png'} will only run on the two images, but empty {} runs all
 
+
+%test 1
+config.noiseSig = 8/255;
+config.testSuiteUseImages = {'boat.png'};
 test_suite(algorithmHandle, config);
+
+%test 2
+config.noiseSig = 20/255;
+config.testSuiteUseImages = {'lena.png'};
+test_suite(algorithmHandle, config);
+
+%test 3
+config.noiseSig = 25/255;
+config.testSuiteUseImages = {'barbara.png'};
+test_suite(algorithmHandle, config);
+
+%test 4
+config.noiseSig = 35/255;
+config.testSuiteUseImages = {'mandrill.png'};
+test_suite(algorithmHandle, config);
+
+%test 5
+%can't find the image
 
 end

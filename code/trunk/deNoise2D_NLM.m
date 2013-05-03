@@ -1,4 +1,4 @@
-function [output outputPrefix] = deNoise2D_NLM( noisyImg, config, origImg )
+function output = deNoise2D_NLM( noisyImg, config, origImg )
 
   kSize = config.kSize;
   searchSize = config.searchSize;

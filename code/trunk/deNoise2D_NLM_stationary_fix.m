@@ -14,6 +14,7 @@ hSq = h*h;
 nPix = M*N;
 
 deNoisedImg = noisyImg;
+deNoisedImgOrig = noisyImg;
 
 borderSize = halfKSize+halfSearchSize+1;
 
@@ -52,6 +53,8 @@ for j=borderSize:M-borderSize
         NLestimatedU = sum( sum( localWeights .* subImg ) );
         NLestimatedUSq = sum( sum( localWeights .* (subImg.^2) ) );
         NLestimatedSigmaSq = NLestimatedUSq - NLestimatedU.^2;
+        
+        deNoisedImgOrig(j,i) = NLestimatedU; %keep original image for comparison
         
         sigmaSqMetric = NLestimatedSigmaSq;
         if sigmaSqMetric > varianceCutoff
