@@ -18,22 +18,34 @@ config.testSuiteUseExternalImage = false; %if true, will not read in any images,
 
 %test 1
 config.noiseSig = 8/255;
+config.h = 12*config.noiseSig;
 config.testSuiteUseImages = {'boat.png'};
+test_suite(algorithmHandle, config);
+test_suite(algorithmHandle, config);
 test_suite(algorithmHandle, config);
 
 %test 2
 config.noiseSig = 20/255;
+config.h = 12*config.noiseSig;
 config.testSuiteUseImages = {'lena.png'};
+test_suite(algorithmHandle, config);
+test_suite(algorithmHandle, config);
 test_suite(algorithmHandle, config);
 
 %test 3
 config.noiseSig = 25/255;
+config.h = 12*config.noiseSig;
 config.testSuiteUseImages = {'barbara.png'};
+test_suite(algorithmHandle, config);
+test_suite(algorithmHandle, config);
 test_suite(algorithmHandle, config);
 
 %test 4
 config.noiseSig = 35/255;
+config.h = 12*config.noiseSig;
 config.testSuiteUseImages = {'mandrill.png'};
+test_suite(algorithmHandle, config);
+test_suite(algorithmHandle, config);
 test_suite(algorithmHandle, config);
 
 %test 5
