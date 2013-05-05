@@ -32,10 +32,12 @@ function output = deNoise2D_NLM( noisyImg, config, origImg )
   end
 
   %% perform algorithm
-  for j=borderSize:M-borderSize
-    if mod(j,10)==0 disp(['Working on row ', num2str(j)]); end;
-
+  parfor j=borderSize:M-borderSize
     for i=borderSize:N-borderSize
+      % As far as I (Thomas) know, noisyImg can't be easily sliced to
+      % improve performance. Instead, one would have to use spmd to do
+      % such things. However, most of the time is spent in the two inner 
+      % loops anyway 
       kernel = noisyImg( j-halfKSize:j+halfKSize, ...
         i-halfKSize:i+halfKSize );
 
