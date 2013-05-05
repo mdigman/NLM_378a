@@ -17,15 +17,18 @@ if any(strcmp(fields(config), 'testSuiteUseExternalImage')) && ...
     testSuiteExternalImage = config.testSuiteExternalImage;
 end
 
+
 % FILE SETUP
 % by default uses all images, change config.testSuiteUseImages to pick
 % individual files
 if isunix
     fileSepChar = '/';
     inDir = ['../../data/images'];
+    addpath('./matlab-ParforProgress2') % Add path for parallel progress tracking
 else
     fileSepChar = '\';
     inDir = ['..\..\data\images'];
+    addpath('.\matlab-ParforProgress2') % Add path for parallel progress tracking
 end
 
 if testSuiteUseExternalImage
@@ -111,6 +114,9 @@ for i=1:nFiles
         end
         img = imread( [inDir,fileSepChar,imgFile] );
     end
+       
+    % save fileName in config for parallel progress bar
+    config.fileName = imgFile;
     
     if color 
       
