@@ -11,6 +11,7 @@ config.searchSize = 5; %nominal value is 21
 config.noiseSig = 10/255; %standard deviation!
 config.h = 12*config.noiseSig;
 config.noiseMean = 0;
+config.color = false;
 
 % Going to run the stationary fix algorithm against the original
 % First generate the noisy image

@@ -54,6 +54,7 @@ end
 % EXTRACT NECESSARY CONFIG INFORMATION
 noiseSig = config.noiseSig; %standard deviation
 noiseMean = config.noiseMean;
+color = config.color;
 
 dateTime = datestr(now);
 dateTime = strrep(dateTime, ':', '');
@@ -111,16 +112,24 @@ for i=1:nFiles
         img = imread( [inDir,fileSepChar,imgFile] );
     end
     
-    nDimsImg = ndims( img );
-    if nDimsImg>2
-        img = rgb2gray( img );
+    if color 
+      
+    else
+      nDimsImg = ndims( img );
+      if nDimsImg>2
+          img = rgb2gray( img );
+      end
     end
     
     img = double( img )/255.;
     
     sImg = size( img );
     if testSuiteAddNoise
-        noise = normrnd( noiseMean, noiseSig, sImg(1), sImg(2) );
+        if color
+          noise = normrnd( noiseMean, noiseSig, sImg(1), sImg(2), sImg(3));
+        else
+          noise = normrnd( noiseMean, noiseSig, sImg(1), sImg(2) );
+        end
         noisyImg = img + noise;
     else
         noisyImg = img;
