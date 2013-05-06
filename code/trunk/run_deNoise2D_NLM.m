@@ -1,7 +1,7 @@
 function run_deNoise2D_NLM
 
 % FUNCTION HANDLE
-algorithmHandle = @deNoise2D_NLM;
+algorithmHandle = @deNoise2D_NLM_multi;
 
 % NLM CONFIGURATION VALUES (NOMINAL)
 config = struct();
@@ -16,7 +16,7 @@ config.testSuiteAddNoise = true; %if false, will not add noise to the image. use
 config.testSuiteUseExternalImage = false; %if true, will not read in any images, but will process based on what you pass in
 %config.testSuiteExternalImage = imread('../../data/images/lena.png');
 %UseExternalImage flag overrides UseImages flag
-config.testSuiteUseImages = {}; %ex: testSuiteUseImages = {'lena.png', 'boat.png'} will only run on the two images, but empty {} runs all
+config.testSuiteUseImages = {'lena.png'}; %ex: testSuiteUseImages = {'lena.png', 'boat.png'} will only run on the two images, but empty {} runs all
 
 test_suite(algorithmHandle, config);
 

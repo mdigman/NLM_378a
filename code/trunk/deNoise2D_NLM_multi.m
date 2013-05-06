@@ -4,7 +4,7 @@ function output = deNoise2D_NLM_multi( noisyImg, config, origImg )
   searchSize = config.searchSize;   % Search Window Size
   h = config.h;
   noiseSig = config.noiseSig;
-  k = 4;                            % Number of Windows to look at
+  k = 80;                            % Number of Windows to look at
   
   % Zoom out by factor of 2
   noisyImgRect = zeros(floor(size(noisyImg,1)./2),size(noisyImg,2));
@@ -15,9 +15,11 @@ function output = deNoise2D_NLM_multi( noisyImg, config, origImg )
   for i = 1:floor(size(noisyImg,2)./2)
       noisyImgSmall(:,i) = noisyImgRect(:,2*i);
   end
-  
+
+%   noisyImgSmall = impyramid(noisyImg,'reduce');
+
   % Apply NLM to zoomed out Image
-  similarities = deNoise2D_multi_whole_image(noisyImgSmall,k,kSize,searchSize,h);
+  similarities = deNoise2D_multi_whole_image(noisyImgSmall,k,kSize,2*searchSize,h);
   
   halfSearchSize = floor( searchSize/2 );
   halfKSize = floor( kSize/2 );
@@ -75,7 +77,7 @@ function output = deNoise2D_NLM_multi( noisyImg, config, origImg )
 
   output.mse = -1;
   if nargin > 2
-    output.mse = calculateMSE( origImg, deNoisedImg, borderSize );
+    output.mse = calculateMSE( origImg, deNoisedImg, 2*borderSize );
   else
   end
 end
@@ -104,7 +106,7 @@ function similarities = deNoise2D_multi_whole_image(noisyImg,k,kSize,searchSize,
         for iP=0:searchSize-1
           vJ = j-halfSearchSize+jP;
           vI = i-halfSearchSize+iP;
-          if ((j ~= vJ) || (i ~= vI))
+          %if ((j ~= vJ) || (i ~= vI))
               v = noisyImg( vJ-halfKSize : vJ+halfKSize, ...
                   vI-halfKSize : vI+halfKSize  );
               
@@ -112,7 +114,7 @@ function similarities = deNoise2D_multi_whole_image(noisyImg,k,kSize,searchSize,
               distSq = sum( distSq(:) ); %L2 norm squared
               
               weights( jP+1, iP+1 ) = exp( - distSq / hSq );
-          end
+          %end
         end
       end
 
