@@ -1,8 +1,6 @@
 function output = deNoise2D_NLM_GW( noisyImg, config, origImg )
 %Uses gaussian weighted L2 norm
-%Does not work with color for now
 
-assert(config.color == false);
 
   kSize = config.kSize;
   searchSize = config.searchSize;
@@ -14,13 +12,18 @@ assert(config.color == false);
   halfKSize = floor( kSize/2 );
   hSq = h*h;
 
- 
-  [M N] = size( noisyImg );
-  
-  %Define the gaussian kernel for the gaussian weighted L2-norm
   a = 0.5*(kSize-1)/2;
-  gaussKernel = fspecial('gaussian', kSize, a)*kSize^2;
-
+  
+  if color
+    [M N C] = size( noisyImg );
+    gaussKernel = fspecial('gaussian', kSize, a)*kSize^2;
+    gaussKernel = repmat(gaussKernel, [1 1 3]);
+  else
+    [M N] = size( noisyImg );
+    %Define the gaussian kernel for the gaussian weighted L2-norm
+    gaussKernel = fspecial('gaussian', kSize, a)*kSize^2;
+  end
+  
   deNoisedImg = noisyImg;
 
   borderSize = halfKSize+halfSearchSize+1;
@@ -51,11 +54,15 @@ assert(config.color == false);
       % loops anyway 
       
       
-      
-      kernel = noisyImg( j-halfKSize:j+halfKSize, ...
+      if color
+        kernel = noisyImg( j-halfKSize:j+halfKSize, ...
+          i-halfKSize:i+halfKSize, :);
+        localWeights = zeros( searchSize, searchSize , 3);
+      else
+        kernel = noisyImg( j-halfKSize:j+halfKSize, ...
           i-halfKSize:i+halfKSize );
-      localWeights = zeros( searchSize, searchSize );
-      
+        localWeights = zeros( searchSize, searchSize );
+      end
       
 
       for jP=0:searchSize-1
@@ -66,20 +73,29 @@ assert(config.color == false);
           vI = i-halfSearchSize+iP;
           
           
-          v = noisyImg( vJ-halfKSize : vJ+halfKSize, ...
+          if color
+            v = noisyImg( vJ-halfKSize : vJ+halfKSize, ...
+              vI-halfKSize : vI+halfKSize, : );
+          else
+            v = noisyImg( vJ-halfKSize : vJ+halfKSize, ...
               vI-halfKSize : vI+halfKSize  );
+          end
           
           %Gaussian weighted L2 norm squared
           distSq = ( kernel - v ) .* ( kernel - v );
           weightedDistSq = distSq.*gaussKernel;
           weightedDistSq = sum( weightedDistSq(:) ); 
                 
-          localWeights( jP+1, iP+1 ) = exp( - weightedDistSq / hSq );
+          localWeights( jP+1, iP+1,: ) = exp( - weightedDistSq / hSq );
 
         end
       end
 
-      localWeights = localWeights / sum( localWeights(:) );
+      if color
+        localWeights = localWeights / sum( sum( localWeights(:,:,1) ) ); 
+      else
+        localWeights = localWeights / sum( localWeights(:) );
+      end
       
       subImg = noisyImg( j-halfSearchSize : j+halfSearchSize, ...
           i-halfSearchSize : i+halfSearchSize, : );
