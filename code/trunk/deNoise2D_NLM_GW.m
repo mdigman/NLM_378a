@@ -19,7 +19,7 @@ assert(config.color == false);
   
   %Define the gaussian kernel for the gaussian weighted L2-norm
   a = 0.5*(kSize-1)/2;
-  gaussKernel = fspecial('gaussian', kSize, a);
+  gaussKernel = fspecial('gaussian', kSize, a)*kSize^2;
 
   deNoisedImg = noisyImg;
 
