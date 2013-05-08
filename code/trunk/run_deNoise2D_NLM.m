@@ -1,7 +1,7 @@
 function run_deNoise2D_NLM
 
 % FUNCTION HANDLE
-algorithmHandle = @deNoise2D_NLM_multi;
+algorithmHandle = @deNoise2D_NLM;
 
 % NLM CONFIGURATION VALUES (NOMINAL)
 config = struct();
