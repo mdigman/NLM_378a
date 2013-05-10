@@ -24,18 +24,18 @@ int main( int argc, char** argv )
 
 	ptime date_time = microsec_clock::universal_time();
 
-	std::string path = "./output-" + to_iso_string(date_time) + "/";
-	std::string imagePath = path + imageName;
+	std::string p = "./output-" + to_iso_string(date_time) + "/";
+	boost::filesystem::path outputDirectory(p);
+	boost::filesystem::path inputFilePath(imageName);
+	boost::filesystem::path outputFilePath(outputDirectory.native() + inputFilePath.filename().native());
 
-	boost::filesystem::path p(path);
-
-	bool error = boost::filesystem::create_directories(p);
+	bool error = boost::filesystem::create_directories(outputDirectory);
 	if(error) {
 		printf("couldn't create output directory\n");
 		return -1;
 	}
 
-	imwrite( imagePath.c_str(), image );
+	imwrite( outputFilePath.c_str(), image );
 
 	namedWindow( imageName, CV_WINDOW_AUTOSIZE );
 
