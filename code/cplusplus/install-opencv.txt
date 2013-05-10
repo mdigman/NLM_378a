@@ -1,0 +1,11 @@
+opencv is available from
+http://opencv.org/
+
+On mac, you can just install it via homebrew:
+Switch to the science repository first, then install
+$ homebrew tap homebrew/science
+$ homebrew install opencv
+
+On linux, you might want to check if your distribution has a repository for opencv. Ubuntu has, afaik.
+
+On windows, there download file is a .exe, so I assume it comes with an installer
