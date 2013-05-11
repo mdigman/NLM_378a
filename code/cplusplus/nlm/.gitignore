@@ -6,3 +6,4 @@ nlm-standard
 *.o
 build
 dist
+nbproject/private
