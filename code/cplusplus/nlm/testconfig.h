@@ -34,15 +34,15 @@ public:
 	}
 
 private:
-	void initStandardConfig() {
-		kSize = 7;
-		searchSize = 21;
-		noiseSig = 20.0 / 255.0;
-		h = 12.0 * noiseSig;
-		noiseMean = 0.0;
-		color = false;
-		testSuiteAddNoise = true;
-	}
+    void initStandardConfig() {
+        kSize = 7;
+        searchSize = 21;
+        noiseSig = 20.0 / 255.0;
+        h = 12.0 * noiseSig;
+        noiseMean = 0.0;
+        color = false;
+        testSuiteAddNoise = true;
+    }
 };
 
 #endif

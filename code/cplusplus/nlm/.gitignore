@@ -1,5 +1,8 @@
 # Output Folders #
 ############
 # Ignore image algorithm output folders
-output_*
+output*
 nlm-standard
+*.o
+build
+dist

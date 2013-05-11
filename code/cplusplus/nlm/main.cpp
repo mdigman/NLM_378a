@@ -3,6 +3,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "testconfig.h"
+#include "StandardNLMAlgorithm.h"
 
 //using namespace boost::filesystem;
 using namespace boost::posix_time;
@@ -13,14 +14,19 @@ void nlm_algorithm(Mat image);
 int main( int argc, char** argv )
 {
 	char* imageName = argv[1];
+    
+    if( !argc == 2) {
+        printf("No image specified. Will quit now.\n");
+        return -1;
+    }
 
 	Mat image;
 	// flag 0: convert to grayscale
 	image = imread( imageName, 0 );
 
-	if( argc != 2 || !image.data ) {
-		printf( " No image data \n " );
-		return -1;
+	if( !image.data ) {
+		printf( "Could not read image. Will quit now.\n " );
+		return -3;
 	}
 
 	#include <boost/date_time/posix_time/posix_time.hpp>
@@ -38,13 +44,14 @@ int main( int argc, char** argv )
 		return -1;
 	}
 
-	
-	nlm_algorithm(image);
-
 	// now run algorithm
 	// no need to pass a reference. OpenCV will take
 	// care of not copying the matrix.
 	// done
+    TestConfig config; // TODO: make this configurable via tests
+
+	StandardNLMAlgorithm algorithm(config);
+	algorithm.runAlgorithm(image);
 
 	imwrite( outputFilePath.c_str(), image );
 
