@@ -6,7 +6,7 @@ LDFLAGS = -I/usr/local/include/opencv -lm -lopencv_core -lopencv_highgui -lopenc
 
 
 all:
-	$(CC) main.cpp -o nlm-standard $(LDFLAGS)
+	$(CC) testconfig.h main.cpp -o nlm-standard $(LDFLAGS)
 
 test:
 	./nlm-standard '../../../data/images/comedian.png'

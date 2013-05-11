@@ -2,10 +2,13 @@
 #include <iostream>
 #include <boost/filesystem.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include "testconfig.h"
 
 //using namespace boost::filesystem;
 using namespace boost::posix_time;
 using namespace cv;
+
+void nlm_algorithm(Mat image);
 
 int main( int argc, char** argv )
 {
@@ -35,6 +38,14 @@ int main( int argc, char** argv )
 		return -1;
 	}
 
+	
+	nlm_algorithm(image);
+
+	// now run algorithm
+	// no need to pass a reference. OpenCV will take
+	// care of not copying the matrix.
+	// done
+
 	imwrite( outputFilePath.c_str(), image );
 
 	namedWindow( imageName, CV_WINDOW_AUTOSIZE );
@@ -44,4 +55,8 @@ int main( int argc, char** argv )
 	waitKey(0);
 
 	return 0;
+}
+
+void nlm_algorithm(Mat image) {
+
 }
