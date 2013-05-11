@@ -51,13 +51,13 @@ int main( int argc, char** argv )
     TestConfig config; // TODO: make this configurable via tests
 
 	StandardNLMAlgorithm algorithm(config);
-	algorithm.runAlgorithm(image);
+	Mat denoisedImage = algorithm.runAlgorithm(image);
 
-	imwrite( outputFilePath.c_str(), image );
+	imwrite( outputFilePath.c_str(), denoisedImage );
 
 	namedWindow( imageName, CV_WINDOW_AUTOSIZE );
 
-	imshow( imageName, image );
+	imshow( imageName, denoisedImage );
 
 	waitKey(0);
 

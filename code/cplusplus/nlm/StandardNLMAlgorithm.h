@@ -14,7 +14,7 @@ class StandardNLMAlgorithm : public NLMAlgorithm {
 public:
     StandardNLMAlgorithm(TestConfig config);
     
-    void runAlgorithm(Mat image);
+    Mat runAlgorithm(Mat image);
 
 };
 

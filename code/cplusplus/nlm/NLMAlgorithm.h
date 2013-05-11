@@ -27,7 +27,7 @@ public:
      runs the algorithm of this class. Must be reimplemented
      by a subclass.
     */
-    virtual void runAlgorithm(Mat image) = 0;
+    virtual Mat runAlgorithm(Mat image) = 0;
     
 protected:
     TestConfig config;
