@@ -102,7 +102,7 @@ build-tests: .build-tests-post
 
 # run tests
 test: 
-	$(CND_ARTIFACT_DIR_${CONF})/nlm $(CND_BASEDIR)/../../../data/images/comedian.png
+	$(CND_ARTIFACT_DIR_${CONF})/nlm $(CND_BASEDIR)/../../../data/images/cameraman.png
 
 .test-pre: build-tests
 # Add your pre 'test' code here...

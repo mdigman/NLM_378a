@@ -34,18 +34,19 @@ Mat StandardNLMAlgorithm::runAlgorithm(Mat noisyImg) {
 
     int borderSize = halfKSize+halfSearchSize+1;
   
-    
+    // make sure printf outputs immediately
+    setbuf(stdout, NULL);
+    printf("loop from j=%d, j < %d, j++\n", borderSize, M-borderSize);
 
     // perform algorithm
-    for (int j=borderSize; j <= M-borderSize; j++) {
-        for(int i=borderSize; i <= N-borderSize; i++) {
-            /* 
-             * As far as I (Thomas) know, noisyImg can't be easily sliced to
-             * improve performance. Instead, one would have to use spmd to do
-             * such things. However, most of the time is spent in the two inner 
-             * loops anyway 
-             */
-            
+    // the outer loop can easily be parallelized
+    for (int j= 489/*borderSize*/; j < M-borderSize; j++) {
+        printf("%d ", j);
+        for(int i= 494/*borderSize*/; i < N-borderSize; i++) {
+            // As far as I (Thomas) know, noisyImg can't be easily sliced to
+            // improve performance. Instead, one would have to use spmd to do
+            // such things. However, most of the time is spent in the two inner 
+            // loops anyway 
             
             Mat kernel;
             Mat localWeights;
@@ -55,13 +56,16 @@ Mat StandardNLMAlgorithm::runAlgorithm(Mat noisyImg) {
                // TODO: check type CV_8UC3 for colors
               localWeights = Mat(searchSize, searchSize, CV_8UC3);
             } else {
+                
+
+                // endRow/Col is not included, thus + 1
+                //end
+                
                 kernel = noisyImg.rowRange(j-halfKSize, j+halfKSize+1)
                         .colRange(i-halfKSize,i+halfKSize+1);
+            
                 localWeights = Mat(searchSize, searchSize, CV_8UC1);
             }
-
-                 // endRow/Col is not included, thus + 1
-            //end
 
             for(int jP=0; jP < searchSize; jP++) {
                 for(int iP=0; iP < searchSize; iP++) {
@@ -74,10 +78,10 @@ Mat StandardNLMAlgorithm::runAlgorithm(Mat noisyImg) {
                     
                     // TODO: does this work for color?
                     //L2 norm squared
-                    Scalar distSq = sum(( kernel - v ).mul( kernel - v ));
+                    //Scalar distSq = sum(( kernel - v ).mul( kernel - v ));
 
                     // TODO: does this work for color?
-                    exp( - distSq / hSq, localWeights.at<Scalar>(jP, iP) );
+                    //exp( - distSq / hSq, localWeights.at<Scalar>(jP, iP) );
                 }
             }
 
@@ -87,8 +91,16 @@ Mat StandardNLMAlgorithm::runAlgorithm(Mat noisyImg) {
             Mat subImg = noisyImg.rowRange(j-halfSearchSize, j+halfSearchSize + 1)
                 .colRange(i-halfSearchSize, i+halfSearchSize + 1);
 
-            deNoisedImg.at<Scalar>(j,i) = sum( sum( localWeights.mul(subImg) ) ) ;
+            Mat mulLocalWeights = localWeights.mul(subImg);
+            Scalar sum1LocalWeights = sum(mulLocalWeights);
+            Scalar sum2LocalWeights = sum(sum1LocalWeights);
+            
+            Scalar oldValue = deNoisedImg.at<Scalar>(j,i);
+            
+            deNoisedImg.at<Scalar>(j,i) = sum2LocalWeights;
         }
     }
+    
+    return deNoisedImg;
 }
 

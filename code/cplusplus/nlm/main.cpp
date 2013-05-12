@@ -13,7 +13,7 @@ void nlm_algorithm(Mat image);
 
 int main( int argc, char** argv )
 {
-	char* imageName = argv[1];
+	const char* imageName = argv[1];
     
     if( !argc == 2) {
         printf("No image specified. Will quit now.\n");
