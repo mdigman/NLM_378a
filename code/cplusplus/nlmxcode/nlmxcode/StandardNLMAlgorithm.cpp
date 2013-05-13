@@ -17,9 +17,6 @@
 #include <math.h>
 #include "TestConfig.h"
 
-typedef uchar weights_type;
-#define WEIGHTS_TYPE_DEF CV_8U
-
 
 StandardNLMAlgorithm::StandardNLMAlgorithm(TestConfig config)
 : NLMAlgorithm(config) {
@@ -53,62 +50,56 @@ Mat StandardNLMAlgorithm::runAlgorithm(Mat noisyImg) {
     
     
     Mat kernel;
-    Mat localWeights = Mat(searchSize, searchSize, WEIGHTS_TYPE_DEF);
+    Mat localWeights;
     
     // perform algorithm
-    // the outer loop can easily be parallelized
-    for (int j= borderSize; j < M-borderSize; j++) {
+    // both i, j loops can easily be parallelized
+    for(int j = borderSize - 1; j < M - borderSize; j++) {
         printf("%d ", j);
-        for(int i= borderSize; i < N-borderSize; i++) {
-            // As far as I (Thomas) know, noisyImg can't be easily sliced to
-            // improve performance. Instead, one would have to use spmd to do
-            // such things. However, most of the time is spent in the two inner
-            // loops anyway
+        for(int i = borderSize - 1; i < N - borderSize; i++) {
             kernel = noisyImg.rowRange(j-halfKSize, j+halfKSize+1)
-                             .colRange(i-halfKSize,i+halfKSize+1);
+                             .colRange(i-halfKSize, i+halfKSize+1);
+            // local weights are floating point numbers
+            // TODO: see if we can pack them in a single byte of memory.
+            localWeights = Mat::zeros(searchSize, searchSize, CV_32F);
             
-            for(int jP=0; jP < searchSize; jP++) {
-                for(int iP=0; iP < searchSize; iP++) {
-                    int vJ = j-halfSearchSize+jP;
-                    int vI = i-halfSearchSize+iP;
-                    Mat v;
+            for(int jP = 0; jP < searchSize; jP++) {
+                for(int iP = 0; iP < searchSize; iP++) {
+                    int vJ = j - halfSearchSize + jP;
+                    int vI = i - halfSearchSize + iP;
                     
-                    v = noisyImg.rowRange(vJ-halfKSize, vJ+halfKSize + 1)
-                                .colRange(vI-halfKSize, vI+halfKSize+1);
+                    Mat v = noisyImg.rowRange(vJ - halfKSize, vJ + halfKSize + 1)
+                                    .colRange(vI - halfKSize, vI + halfKSize + 1);
                     
-                    // TODO: does this work for color?
-                    //L2 norm squared
-                    Mat kernelDiff = kernel - v;
-                    Scalar distSum = sum(( kernelDiff ).mul( kernelDiff ));
-                    double distSq = distSum[0];
+                    uchar distSq = sum((kernel - v).mul(kernel - v))[0];
                     
-                    // TODO: does this work for color?
-                    localWeights.at<weights_type>(jP, iP) = exp( - distSq / hSq );
-                    
-                    /*
-                     * matlab code:
-                     
-                    distSq = ( kernel - v ) .* ( kernel - v );
-                    distSq = sum( distSq(:) ); %L2 norm squared
-                    
-                    localWeights( jP+1, iP+1 ,:) = exp( - distSq / hSq );
-                     */
+                    // TODO: see if we can pack the weights in a single byte of memory.
+                    // Idea: The exponential is always < 1. We can multiply the result by 255.
+                    localWeights.at<float>(jP, iP) = exp(-((double)distSq) / hSq);
                 }
             }
             
-            double localWeightsSum = sum(localWeights)[0]; // convert to floating point here
-            double localWeightsScale = 1.0/localWeightsSum; // this must be floating point
+            localWeights = localWeights.mul(Mat::ones(localWeights.size(), CV_32F), 1.0/sum(localWeights)[0]);
             
-            localWeights = localWeights.mul(Mat::ones(localWeights.size(), WEIGHTS_TYPE_DEF), localWeightsScale);
+            Mat subImg = noisyImg.rowRange(j-halfSearchSize, j + halfSearchSize + 1)
+            .colRange(i-halfSearchSize, i + halfSearchSize + 1);
             
-            Mat subImg = noisyImg.rowRange(j-halfSearchSize, j+halfSearchSize + 1)
-                                 .colRange(i-halfSearchSize, i+halfSearchSize + 1);
+            // because OpenCV elementwise matrix multiplication only works when both matrices
+            // have the same type, we need to convert our subImg to the same  type of the local
+            // weights.
+            subImg.convertTo(subImg, CV_32F);
             
-            Mat weightedSubImg = subImg.mul(localWeights);
-            deNoisedImg.at<Pixel>(j,i) = sum(weightedSubImg)[0];
+            // TODO: make this work with a localWeights matrix of type uchar
+            // Idea: Do the elementwise summing manually. That way, we can cast in every iteration to a
+            // short/int because sure the element multiplication would exceed the uchar bounds.
+            // Then, at the very end, divide by 255 (since we multiplied all weights by 255)
+            int temp = round(sum(localWeights.mul(subImg))[0]);
+            temp = temp > 255 ? 255 : temp;
+            temp = temp < 0 ? 0 : temp;
+            
+            deNoisedImg.at<uchar>(j,i) = temp;
         }
-    }
-    
+    }    
     return deNoisedImg;
 }
 

@@ -13,6 +13,9 @@
 #include "testconfig.h"
 #include "StandardNLMAlgorithm.h"
 #include "EmptyAlgorithm.h"
+#include <boost/timer/timer.hpp>
+#include <cmath>
+
 
 //using namespace boost::filesystem;
 using namespace boost::posix_time;
@@ -69,7 +72,10 @@ int main( int argc, char** argv )
     
 	StandardNLMAlgorithm algorithm(config);
     //EmptyAlgorithm algorithm(config);
+    
+    boost::timer::auto_cpu_timer *t = new boost::timer::auto_cpu_timer();
 	Mat denoisedImage = algorithm.runAlgorithm(noisyImage);
+    delete t;
     
 	imwrite( outputFilePath.c_str(), denoisedImage );
     
