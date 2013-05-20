@@ -144,7 +144,7 @@ for i=1:nFiles
     output = algorithmHandle(noisyAudio, fs, config, audio);
     runtime = toc;
     
-    imwrite( output.deNoisedAudio, [outDir, fileSepChar, ...
+    wavwrite( output.deNoisedAudio, fs, [outDir, fileSepChar, ...
         output.prefix, audioFile] );
     
     % how do we print the magnitude difference? maybe plot it over time

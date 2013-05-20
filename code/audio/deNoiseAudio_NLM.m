@@ -7,7 +7,7 @@ function output = deNoiseAudio_NLM( noisyAudio, fs, config, origAudio )
 
   halfSearchSize = floor( searchSize/2 );
   halfKSize = floor( kSize/2 );
-  %hSq = h*h;
+  hSq = h*h;
 
   % wavread/audioread will return the audio channels in column vectors
   [M, numChannels] = size( noisyAudio );
@@ -34,7 +34,7 @@ function output = deNoiseAudio_NLM( noisyAudio, fs, config, origAudio )
 
 
   %% perform algorithm
-  parfor j=borderSize:M-borderSize
+  for j=borderSize:M-borderSize
     % As far as I (Thomas) know, noisyImg can't be easily sliced to
     % improve performance. Instead, one would have to use spmd to do
     % such things. However, most of the time is spent in the two inner 
@@ -52,7 +52,7 @@ function output = deNoiseAudio_NLM( noisyAudio, fs, config, origAudio )
       distSq = ( kernel - v ) .* ( kernel - v );
       distSq = sum( distSq, 1 ); %L2 norm squared
 
-      localWeights( jP+1, :) = exp( - distSq / h );
+      localWeights( jP+1, :) = exp( - distSq / hSq );
     end
 
     localWeights = localWeights / sum( localWeights(:) );
@@ -77,6 +77,8 @@ function output = deNoiseAudio_NLM( noisyAudio, fs, config, origAudio )
   %imshow( deNoisedAudio, [] );
   %drawnow; % make sure it's displayed
   %pause(0.01); % make sure it's displayed
+  sound(origAudio, fs);
+  sound(noisyAudio, fs);
   sound(deNoisedAudio, fs);
   
   %% copy output audio
