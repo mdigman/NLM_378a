@@ -19,6 +19,6 @@ config.color = false; %if true, will not convert to gray scale and will compute 
 %test 1
 config.noiseSig = 20/255;
 config.h = 12*config.noiseSig;
-config.testSuiteUseImages = {'barbara.png','lena.png','mandrill.png'};
+config.testSuiteUseImages = {'barbara.png'};%,'lena.png','mandrill.png'};
 test_suite(algorithmHandle, config);
 end
