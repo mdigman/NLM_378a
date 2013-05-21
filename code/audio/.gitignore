@@ -1,0 +1,4 @@
+# Output Folders #
+############
+# Ignore image algorithm output folders
+output_*

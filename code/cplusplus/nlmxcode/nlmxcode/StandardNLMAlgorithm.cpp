@@ -17,15 +17,6 @@
 #include <math.h>
 #include "TestConfig.h"
 
-
-uchar roundToChar(float d) {
-    int i = round(d);
-    i = i > 255 ? 255 : i;
-    i = i < 0 ? 0 : i;
-    return (uchar)i;
-}
-
-
 StandardNLMAlgorithm::StandardNLMAlgorithm(TestConfig config)
 : NLMAlgorithm(config) {
 }

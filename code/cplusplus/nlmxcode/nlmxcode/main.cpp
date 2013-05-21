@@ -13,6 +13,7 @@
 #include "testconfig.h"
 #include "StandardNLMAlgorithm.h"
 #include "EmptyAlgorithm.h"
+#include "ByteNLMAlgorithm.h"
 #include <boost/timer/timer.hpp>
 #include <cmath>
 
@@ -70,8 +71,7 @@ int main( int argc, char** argv )
     
     // run algorithm
     
-	StandardNLMAlgorithm algorithm(config);
-    //EmptyAlgorithm algorithm(config);
+	ByteNLMAlgorithm algorithm(config);
     
     boost::timer::auto_cpu_timer *t = new boost::timer::auto_cpu_timer();
 	Mat denoisedImage = algorithm.runAlgorithm(noisyImage);
