@@ -74,12 +74,8 @@ function output = deNoise2D_NLM_multi( noisyImg, config, origImg )
   output = struct();
   output.deNoisedImg = deNoisedImg;
   output.prefix = 'NLM_';
+  output.borderSize = borderSize;
 
-  output.mse = -1;
-  if nargin > 2
-    output.mse = calculateMSE( origImg, deNoisedImg, 2*borderSize );
-  else
-  end
 end
   
   

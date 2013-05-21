@@ -111,10 +111,4 @@ function output = deNoise2D_NLM( noisyImg, config, origImg )
   output = struct();
   output.deNoisedImg = deNoisedImg;
   output.prefix = 'NLM_';
-
-  output.mse = -1;
-  if nargin > 2
-    output.mse = calculateMSE( origImg, deNoisedImg, borderSize );
-  else
-  end
-end
+  output.borderSize = borderSize;

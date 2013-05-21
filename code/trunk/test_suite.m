@@ -97,7 +97,7 @@ fclose(configID);
 
 % OPEN FILES FOR WRITING
 logID = fopen([outDir,fileSepChar,'log.csv'], 'w');
-fprintf( logID, 'filename, runtime (sec), MSE, Paper MSE\n');
+fprintf( logID, 'filename, runtime (sec), MSE, Paper MSE, PSNR\n');
 
 % PROCESS EACH FILE
 for i=1:nFiles
@@ -153,7 +153,12 @@ for i=1:nFiles
     imwrite( magDiffImg, [outDir, fileSepChar, output.prefix, ...
         '_diff_',imgFile] );
     
-    fprintf( logID, '%s, %f, %f, %f\n', imgFile, runtime, output.mse, output.mse*255^2 );
+    %calculate mse
+    mse = calculateMSE( img, output.deNoisedImg, output.borderSize );
+    paperMse = mse*255^2;
+    psnr = calculatePSNR( img, output.deNoisedImg, output.borderSize );
+    
+    fprintf( logID, '%s, %f, %f, %f, %f\n', imgFile, runtime, mse, paperMse, psnr);
 end
 
 fclose(logID);

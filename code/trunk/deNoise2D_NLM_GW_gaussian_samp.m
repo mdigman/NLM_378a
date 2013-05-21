@@ -150,8 +150,4 @@ pause(0.01); % make sure it's displayed
 output = struct();
 output.deNoisedImg = deNoisedImg;
 output.prefix = 'NLM_GW_gaussian_samp';
-
-output.mse = -1;
-if nargin > 2
-    output.mse = calculateMSE( origImg, deNoisedImg, borderSize );
-end
+output.borderSize = borderSize;
