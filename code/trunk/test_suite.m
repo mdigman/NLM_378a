@@ -136,14 +136,14 @@ for i=1:nFiles
         else
           noise = normrnd( noiseMean, noiseSig, sImg(1), sImg(2) );
         end
-        noisyImg = img + noise;
+        noisyImg = min( max( img + noise, 0 ), 1 );
     else
         noisyImg = img;
     end
     imwrite( noisyImg, [outDir,fileSepChar,'noisy_',imgFile] );
     
     tic
-    output = algorithmHandle(noisyImg, config, img);
+    output = algorithmHandle(noisyImg, config);
     runtime = toc;
     
     imwrite( output.deNoisedImg, [outDir, fileSepChar, ...
