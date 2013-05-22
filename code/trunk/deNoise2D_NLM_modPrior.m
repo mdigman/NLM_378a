@@ -1,4 +1,4 @@
-function output = deNoise2D_NLM_modPrior( noisyImg, config, origImg )
+function output = deNoise2D_NLM_modPrior( noisyImg, config )
 %-- Uses gaussian weighted L2 norm
 
 kSize = config.kSize;

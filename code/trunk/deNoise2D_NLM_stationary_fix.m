@@ -1,4 +1,4 @@
-function output = deNoise2D_NLM_stationary_fix(noisyImg, config, origImg)
+function output = deNoise2D_NLM_stationary_fix( noisyImg, config )
 
 kSize = config.kSize;
 searchSize = config.searchSize;

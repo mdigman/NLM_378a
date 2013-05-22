@@ -1,4 +1,4 @@
-function output = deNoise2D_NLM_multi( noisyImg, config, origImg )
+function output = deNoise2D_NLM_multi( noisyImg, config )
   % Initialize
   kSize = config.kSize;             % Similarity Window Size
   searchSize = config.searchSize;   % Search Window Size

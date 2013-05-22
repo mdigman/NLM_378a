@@ -143,7 +143,7 @@ for i=1:nFiles
     imwrite( noisyImg, [outDir,fileSepChar,'noisy_',imgFile] );
     
     tic
-    output = algorithmHandle(noisyImg, config, img);
+    output = algorithmHandle(noisyImg, config);
     runtime = toc;
     
     imwrite( output.deNoisedImg, [outDir, fileSepChar, ...

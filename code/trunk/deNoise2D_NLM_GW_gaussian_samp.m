@@ -1,4 +1,4 @@
-function output = deNoise2D_NLM_GW_gaussian_samp( noisyImg, config, origImg )
+function output = deNoise2D_NLM_GW_gaussian_samp( noisyImg, config )
 %Uses gaussian weighted L2 norm
 
 
