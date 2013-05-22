@@ -136,7 +136,7 @@ for i=1:nFiles
         else
           noise = normrnd( noiseMean, noiseSig, sImg(1), sImg(2) );
         end
-        noisyImg = img + noise;
+        noisyImg = min( max( img + noise, 0 ), 1 );
     else
         noisyImg = img;
     end
