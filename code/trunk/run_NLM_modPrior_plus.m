@@ -1,7 +1,7 @@
-function run_BNLM
+function run_NLM_modPrior_plus
 
 % FUNCTION HANDLE
-algorithmHandle = @deNoise2D_BNLM;
+algorithmHandle = @deNoise2D_NLM_modPrior_plus;
 
 % NLM CONFIGURATION VALUES (NOMINAL)
 config = struct();
