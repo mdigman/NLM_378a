@@ -37,8 +37,14 @@ function run_deNoiseMRI_NLM
   
   [noisyData,scaninfo] = loadminc(noisyFile);
 
-  subNoisyData = noisyData( 109-11:109+11, :, : );
-  deNoiseMRI_NLM( noisyData, config );
+  
+  halfSearchSize = floor( config.searchSize/2 );
+  halfKSize = floor( config.kSize/2 );
+  borderSize = halfKSize+halfSearchSize+1;
+  
+  % Note:  14 is the border size
+  subNoisyData = noisyData( 109-borderSize-8:109+borderSize+8, :, : );
+  deNoiseMRI_NLM( subNoisyData, config );
   subDeNoised = output.deNoisedMRI;
   
   save('deNoisedMRI.mat', subNoisyData, subDeNoised );
