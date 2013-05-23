@@ -115,8 +115,12 @@ function output = deNoise2D_BNLM( noisyImg, config, origImg )
       end
       
       %Set central weight
-      localWeights(halfSearchSize + 1, halfSearchSize +1,:) = max_weight;
-      
+      if max_weight == 0
+        localWeights(halfSearchSize + 1, halfSearchSize +1,:) = 1;
+      else
+        localWeights(halfSearchSize + 1, halfSearchSize +1,:) = max_weight;
+      end
+        
       if color
         localWeights = localWeights / sum( sum( localWeights(:,:,1) ) ); 
       else
