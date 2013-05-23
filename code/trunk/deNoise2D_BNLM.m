@@ -99,11 +99,11 @@ function output = deNoise2D_BNLM( noisyImg, config, origImg )
               if (F > F_thresh)
                 localWeights( jP+1, iP+1 ,:) = 0;
               else
-                distSq = ( kernel - v ) .* ( kernel - v )/noiseSig;
+                distSq = ( kernel - v ) .* ( kernel - v );
                 dist = sqrt(sum( distSq(:) )); %L2 distance
 
                 %Non-vectorized Bayesian Non-Local means weights
-                weight = exp( -0.5*(dist - bayes_dist_offset)^2 );
+                weight = exp( -0.5*(dist/noiseSig - bayes_dist_offset)^2 );
                 localWeights( jP+1, iP+1 ,:) = weight;
 
                 %Update max-weight
@@ -115,8 +115,12 @@ function output = deNoise2D_BNLM( noisyImg, config, origImg )
       end
       
       %Set central weight
-      localWeights(halfSearchSize + 1, halfSearchSize +1,:) = max_weight;
-      
+      if max_weight == 0
+        localWeights(halfSearchSize + 1, halfSearchSize +1,:) = 1;
+      else
+        localWeights(halfSearchSize + 1, halfSearchSize +1,:) = max_weight;
+      end
+        
       if color
         localWeights = localWeights / sum( sum( localWeights(:,:,1) ) ); 
       else

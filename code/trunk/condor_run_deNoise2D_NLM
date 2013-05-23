@@ -1,0 +1,7 @@
+executable = /opt/matlabR2012a/bin/matlab
+arguments = -nodesktop -nosplash -r run_deNoise2D_NLM
+universe = vanilla
+output = condor/run_deNoise2D_NLM.output.$(Process)
+error = condor/run_deNoise2D_NLM.error.$(Process)
+log = condor/run_deNoise2D_NLM.log.$(Process)
+queue
