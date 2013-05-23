@@ -91,7 +91,7 @@ function output = deNoise2D_BNLM( noisyImg, config, origImg )
             %dictionary
             patch_mean = mean(v(:));
             
-            if((abs(patch_mean - kernel_mean) > mean_thresh)
+            if(abs(patch_mean - kernel_mean) > mean_thresh)
               localWeights( jP+1, iP+1 ,:) = 0;
             else
               patch_var = sum((v(:)-patch_mean).^2)/kSq;
