@@ -1,0 +1,8 @@
+Algorithm			written runs 	checked	tested 	audio
+									output 	stereo	quality
+
+NLM					yes		yes 	yes		no		good, at least audible. More tests needed with less noisy signals.
+NLM_GW 				yes		yes		no		no
+NLM_GW_euclidian	yes		yes		yes		no		output == input. This is obviously broken.
+NLM_GW_gauss_sampl	yes		?		?		?
+BNLM				yes		?		?		no
