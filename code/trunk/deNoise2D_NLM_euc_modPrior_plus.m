@@ -53,7 +53,7 @@ end
 
 
 %-- perform algorithm
-for j=borderSize:M-borderSize
+parfor j=borderSize:M-borderSize
     for i=borderSize:N-borderSize
         
         if color
@@ -161,7 +161,7 @@ end
 
 
 %-- show output image
-imshow( deNoisedImg, [] );
+%imshow( deNoisedImg, [] );
 drawnow; % make sure it's displayed
 pause(0.01); % make sure it's displayed
 

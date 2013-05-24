@@ -99,7 +99,8 @@ function test_suite( algorithmHandle, config )
 
   % OPEN FILES FOR WRITING
   logID = fopen([outDir,fileSepChar,'log.csv'], 'w');
-  fprintf( logID, 'filename, runtime (sec), MSE, PSNR\n');
+  %fprintf( logID, 'filename, runtime (sec), MSE, PSNR\n');
+  fprintf( logID, 'filename, runtime (sec), MSE\n');
 
   % create functions for playing files
   function playOrigAudio(gcbo, eventData)
@@ -128,7 +129,7 @@ function test_suite( algorithmHandle, config )
       else
         audioFile = strtrim( files(i,:) );
       end
-      [audio, fs] = audioread( [inDir,fileSepChar,audioFile] );
+      [audio, fs] = wavread( [inDir,fileSepChar,audioFile] );
     end
 
     % save fileName in config for parallel progress bar
@@ -140,7 +141,9 @@ function test_suite( algorithmHandle, config )
     %           img = rgb2gray( img );
     %       end
     %
-    wavwrite( audio, fs, [outDir,fileSepChar,'clean_',audioFile] );
+    if config.testSuiteAddNoise
+      wavwrite( audio, fs, [outDir,fileSepChar,'clean_',audioFile] );
+    end
 
     sAudio = size( audio );
     if testSuiteAddNoise
@@ -164,46 +167,52 @@ function test_suite( algorithmHandle, config )
     wavwrite( deNoisedAudio, fs, [outDir, fileSepChar, ...
       output.prefix, audioFile] );
 
-    %% TODO: does the "click on the figure to play audio" work with multiple files?
+    %% Display spectrogram
+    % for multichannel audio, convert to mono first
+    % TODO: does the "click on the figure to play audio" work with multiple files?
     figure;
     
-    subplot(411);
-    myspectrogram(audio, fs, 2048);
-    set(gca,'ButtonDownFcn', @playOrigAudio);
-    set(get(gca,'Children'),'ButtonDownFcn', @playOrigAudio);
-    title('spectrogram of original audio for -60 to 0dB. Click to play audio.');
+    if config.testSuiteAddNoise, numRows = 4;
+    else numRows = 3; end
     
-    subplot(412);
-    myspectrogram(noisyAudio, fs, 2048);
+    kPlot = 1;
+    
+    if config.testSuiteAddNoise
+      subplot(numRows,1,kPlot);
+      myspectrogram(sum(audio, 2)/sAudio(2), fs, 2048);
+      set(gca,'ButtonDownFcn', @playOrigAudio);
+      set(get(gca,'Children'),'ButtonDownFcn', @playOrigAudio);
+      title('spectrogram of original audio for -60 to 0dB. Click to play audio.');
+      kPlot = kPlot + 1;
+    end
+    
+    subplot(numRows,1,kPlot);
+    myspectrogram(sum(noisyAudio, 2)/sAudio(2), fs, 2048);
     set(gca,'ButtonDownFcn', @playNoisyAudio);
     set(get(gca,'Children'),'ButtonDownFcn', @playNoisyAudio);
     title('spectrogram of noisy audio for -60 to 0dB. Click to play audio.');
+    kPlot = kPlot + 1;
     
-    subplot(413);
-    myspectrogram(deNoisedAudio, fs, 2048);
+    subplot(numRows,1,kPlot);
+    myspectrogram(sum(deNoisedAudio, 2)/sAudio(2), fs, 2048);
     set(gca,'ButtonDownFcn', @playDenoisedAudio);
     set(get(gca,'Children'),'ButtonDownFcn', @playDenoisedAudio);
     title('spectrogram of denoised audio for -60 to 0dB. Click to play audio.');
+    kPlot = kPlot + 1;
     
-    subplot(414);
-    myspectrogram(noisyAudio - deNoisedAudio, fs, 2048);
+    subplot(numRows,1,kPlot);
+    myspectrogram(sum(noisyAudio - deNoisedAudio, 2)/sAudio(2), fs, 2048);
     title('Difference between noisy and denoised audio');
     
     drawnow; % make sure it's displayed
     pause(0.05); % make sure it's displayed
-    
-    %sound(audio, fs);
-    %sound(noisyAudio, fs);
-    %sound(deNoisedAudio, fs);
 
-    %% TODO: print spectrogram difference
-    % don't forget to add myspectrogram function to matlab folder
-
-    %calculate mse
-    %mse = calculateMSE( audio, output.deNoisedAudio, output.borderSize );
+    %% calculate mse
+    mse = calculateMSE( audio, output.deNoisedAudio, output.borderSize );
     %psnr = calculatePSNR( audio, output.deNoisedAudio, output.borderSize );
 
     %fprintf( logID, '%s, %f, %f, %f, %f\n', audioFile, runtime, mse, psnr);
+    fprintf( logID, '%s, %f, %f\n', audioFile, runtime, mse);
 
   end
 

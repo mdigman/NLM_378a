@@ -1,0 +1,23 @@
+Warning: No display specified.  You will not be able to display graphics on the screen.
+Warning: No window system found.  Java option 'MWT' ignored
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2012 The MathWorks, Inc.
+                    R2012a (7.14.0.739) 64-bit (glnxa64)
+                              February 9, 2012
+
+ 
+To get started, type one of these: helpwin, helpdesk, or demo.
+For product information, visit www.mathworks.com.
+ 
+Starting matlabpool using the 'manycores' profile ... connected to 12 labs.
+Runtime: 20s - ETA: 2002.23s    Runtime: 39s - ETA: 1905.4s    Runtime: 57s - ETA: 1858.1s    Runtime: 76s - ETA: 1825.15s    Runtime: 95s - ETA: 1797.38s    Runtime: 113s - ETA: 1772.43s    Runtime: 132s - ETA: 1750.32s    Runtime: 150s - ETA: 1728.29s    Runtime: 169s - ETA: 1707.03s    Runtime: 188s - ETA: 1687.57s    Runtime: 206s - ETA: 1666.56s    Runtime: 224s - ETA: 1645.99s    Runtime: 243s - ETA: 1626.06s    Runtime: 261s - ETA: 1606.21s    Runtime: 280s - ETA: 1586.48s    Runtime: 299s - ETA: 1567.17s    Runtime: 317s - ETA: 1547.51s    Runtime: 335s - ETA: 1528.22s    Runtime: 354s - ETA: 1508.84s    Runtime: 373s - ETA: 1490.1s    Runtime: 391s - ETA: 1471.01s    Runtime: 410s - ETA: 1451.93s    Runtime: 428s - ETA: 1433.03s    Runtime: 447s - ETA: 1414.08s    Runtime: 465s - ETA: 1395.16s    Runtime: 484s - ETA: 1376.33s    Runtime: 502s - ETA: 1357.39s    Runtime: 520s - ETA: 1338.37s    Runtime: 539s - ETA: 1319.57s    Runtime: 558s - ETA: 1300.84s    Runtime: 576s - ETA: 1282.05s    Runtime: 594s - ETA: 1263.24s    Runtime: 613s - ETA: 1244.43s    Runtime: 631s - ETA: 1225.64s    Runtime: 650s - ETA: 1206.92s    Runtime: 668s - ETA: 1188.27s    Runtime: 687s - ETA: 1169.66s    Runtime: 705s - ETA: 1150.97s    Runtime: 725s - ETA: 1133.53s    Runtime: 743s - ETA: 1115.14s    Runtime: 762s - ETA: 1096.42s    Runtime: 780s - ETA: 1077.61s    Runtime: 799s - ETA: 1058.8s    Runtime: 817s - ETA: 1040.07s    Runtime: 836s - ETA: 1021.31s    Runtime: 854s - ETA: 1002.52s    Runtime: 872s - ETA: 983.74s    Runtime: 891s - ETA: 964.97s    Runtime: 909s - ETA: 946.24s    Runtime: 928s - ETA: 927.52s    Runtime: 946s - ETA: 908.84s    Runtime: 964s - ETA: 890.16s    Runtime: 983s - ETA: 871.46s    Runtime: 1001s - ETA: 852.8s    Runtime: 1019s - ETA: 834.12s    Runtime: 1038s - ETA: 815.5s    Runtime: 1056s - ETA: 796.89s    Runtime: 1075s - ETA: 778.29s    Runtime: 1093s - ETA: 759.64s    Runtime: 1112s - ETA: 741.02s    Runtime: 1130s - ETA: 722.43s    Runtime: 1148s - ETA: 703.82s    Runtime: 1167s - ETA: 685.24s    Runtime: 1185s - ETA: 666.65s    Runtime: 1204s - ETA: 648.05s    Runtime: 1222s - ETA: 629.45s    Runtime: 1240s - ETA: 610.9s    Runtime: 1259s - ETA: 592.32s    Runtime: 1277s - ETA: 573.79s    Runtime: 1296s - ETA: 555.28s    Runtime: 1314s - ETA: 536.75s    Runtime: 1333s - ETA: 518.23s    Runtime: 1351s - ETA: 499.72s    Runtime: 1370s - ETA: 481.2s    Runtime: 1388s - ETA: 462.69s    Runtime: 1407s - ETA: 444.18s    Runtime: 1425s - ETA: 425.65s    Runtime: 1444s - ETA: 407.14s    Runtime: 1462s - ETA: 388.63s    Runtime: 1480s - ETA: 370.12s    Runtime: 1499s - ETA: 351.62s    Runtime: 1517s - ETA: 333.11s    Runtime: 1536s - ETA: 314.59s    Runtime: 1554s - ETA: 296.08s    Runtime: 1573s - ETA: 277.58s    Runtime: 1591s - ETA: 259.07s    Runtime: 1610s - ETA: 240.57s    Runtime: 1628s - ETA: 222.06s    Runtime: 1647s - ETA: 203.55s    Runtime: 1665s - ETA: 185.04s    Runtime: 1684s - ETA: 166.53s    Runtime: 1702s - ETA: 148.03s    Runtime: 1721s - ETA: 129.52s    Runtime: 1739s - ETA: 111.02s    Runtime: 1758s - ETA: 92.51s    Runtime: 1776s - ETA: 74.0s    Runtime: 1795s - ETA: 55.5s    Runtime: 1813s - ETA: 37.0s    Runtime: 1831s - ETA: 18.5s                                        >> {Warning: Objects of distcomp.abstractstorage class exist - not clearing this
+class
+or any of its super-classes} 
+{Warning: Objects of distcomp.filestorage class exist - not clearing this class
+or any of its super-classes} 
+{Warning: Objects of distcomp.serializer class exist - not clearing this class
+or any of its super-classes} 
+{Warning: Objects of distcomp.fileserializer class exist - not clearing this
+class
+or any of its super-classes} 
