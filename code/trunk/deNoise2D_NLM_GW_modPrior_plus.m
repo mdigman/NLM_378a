@@ -1,4 +1,4 @@
-function output = deNoise2D_NLM_modPrior_plus( noisyImg, config )
+function output = deNoise2D_NLM_GW_modPrior_plus( noisyImg, config )
 %-- Uses gaussian weighted L2 norm
 
 kSize = config.kSize;
@@ -98,11 +98,8 @@ parfor j=borderSize:M-borderSize
                 
                 %Gaussian weighted L2 norm squared
                 distSq = ( kernel - v ) .* ( kernel - v );
-                dists( jP+1, iP+1 ,:) = sqrt(sum( distSq(:) )); %L2 distance
-                
-                %weightedDistSq = distSq.*gaussKernel;
-                %weightedDistSq = sum( weightedDistSq(:) );
-                %localWeights( jP+1, iP+1,: ) = exp( - weightedDistSq / hSq );
+                weightedDistSq = distSq.*gaussKernel;
+                dists( jP+1, iP+1 ,:) = sqrt(sum( weightedDistSq(:) ));
                 
             end
         end
@@ -158,7 +155,7 @@ end
 
 
 %-- show output image
-imshow( deNoisedImg, [] );
+%imshow( deNoisedImg, [] );
 drawnow; % make sure it's displayed
 pause(0.01); % make sure it's displayed
 
