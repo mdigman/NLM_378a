@@ -9,3 +9,13 @@ Error in run_condor (line 7)
   matlabpool close manycores;
 } 
 
+  >> execution time was 2032.31s.
+
+{Error using matlabpool (line 134)
+Expected syntax is : 'matlabpool close' or  'matlabpool close force'. The
+string 'manycores' is not correct
+
+Error in run_condor (line 7)
+  matlabpool close manycores;
+} 
+

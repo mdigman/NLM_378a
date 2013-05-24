@@ -5,9 +5,9 @@ algorithmHandle = @deNoiseAudio_NLM;
 
 % NLM CONFIGURATION VALUES (NOMINAL)
 config = struct();
-config.kSize = 200;
-config.searchSize = 1049; %nominal value is 21. Must be odd number.
-config.noiseSig = 0.01; %standard deviation!
+config.kSize = 500;
+config.searchSize = 5049; %nominal value is 21. Must be odd number.
+config.noiseSig = 0.005; %standard deviation!
 config.h = 12*config.noiseSig;
 config.noiseMean = 0;
 

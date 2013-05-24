@@ -2,4 +2,5 @@
 ############
 # Ignore image algorithm output folders
 output_*
+output/*
 condor/*
