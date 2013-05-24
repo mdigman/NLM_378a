@@ -15,7 +15,8 @@ function output = deNoiseAudio_NLM_GW_gaussian_samp( noisyAudio, config )
 
   [M, numChannels] = size( noisyAudio );
   %Define the gaussian kernel for the gaussian weighted L2-norm
-  gaussKernel = fspecial('gaussian', kSize, a)*kSize^2;
+  gaussKernel = fspecial('gaussian', [kSize 1], a)*kSize^2;
+  gaussKernel = repmat(gaussKernel, [1 numChannels]);
 
   deNoisedAudio = noisyAudio;
 
@@ -39,7 +40,7 @@ function output = deNoiseAudio_NLM_GW_gaussian_samp( noisyAudio, config )
 
 
   %% perform algorithm
-  parfor j=borderSize:M-borderSize
+  for j=borderSize:M-borderSize
     % As far as I (Thomas) know, noisyAudio can't be easily sliced to
     % improve performance. Instead, one would have to use spmd to do
     % such things. However, most of the time is spent in the two inner

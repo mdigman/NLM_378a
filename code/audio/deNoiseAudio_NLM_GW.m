@@ -1,33 +1,29 @@
-function output = deNoise2D_NLM_GW( noisyImg, config, origImg )
-%Uses gaussian weighted L2 norm
+function output = deNoiseAudio_NLM_GW( noisyAudio, config )
+  %Uses gaussian weighted L2 norm
 
 
   kSize = config.kSize;
   searchSize = config.searchSize;
   h = config.h;
-  noiseSig = config.noiseSig;
-  color = config.color;
+  %noiseSig = config.noiseSig;
 
   halfSearchSize = floor( searchSize/2 );
   halfKSize = floor( kSize/2 );
   hSq = h*h;
 
   a = 0.5*(kSize-1)/2;
+
+  % wavread/audioread will return the audio channels in column vectors
+  [M, numChannels] = size( noisyAudio );
   
-  if color
-    [M N C] = size( noisyImg );
-    gaussKernel = fspecial('gaussian', kSize, a)*kSize^2;
-    gaussKernel = repmat(gaussKernel, [1 1 3]);
-  else
-    [M N] = size( noisyImg );
-    %Define the gaussian kernel for the gaussian weighted L2-norm
-    gaussKernel = fspecial('gaussian', kSize, a)*kSize^2;
-  end
-  
-  deNoisedImg = noisyImg;
+  %Define the gaussian kernel for the gaussian weighted L2-norm
+  gaussKernel = fspecial('gaussian', [kSize 1], a)*kSize^2;
+  gaussKernel = repmat(gaussKernel, [1 numChannels]);
+
+  deNoisedAudio = noisyAudio;
 
   borderSize = halfKSize+halfSearchSize+1;
-  
+
   %% initialize progress tracker
   try % Initialization
     ppm = ParforProgressStarter2(config.fileName, M-2*borderSize, 0.1);
@@ -46,88 +42,49 @@ function output = deNoise2D_NLM_GW( noisyImg, config, origImg )
 
 
   %% perform algorithm
-  parfor j=borderSize:M-borderSize
-    for i=borderSize:N-borderSize
-      % As far as I (Thomas) know, noisyImg can't be easily sliced to
-      % improve performance. Instead, one would have to use spmd to do
-      % such things. However, most of the time is spent in the two inner 
-      % loops anyway 
-      
-      
-      if color
-        kernel = noisyImg( j-halfKSize:j+halfKSize, ...
-          i-halfKSize:i+halfKSize, :);
-        localWeights = zeros( searchSize, searchSize , 3);
-      else
-        kernel = noisyImg( j-halfKSize:j+halfKSize, ...
-          i-halfKSize:i+halfKSize );
-        localWeights = zeros( searchSize, searchSize );
-      end
-      
+  for j=borderSize:M-borderSize
+    % As far as I (Thomas) know, noisyImg can't be easily sliced to
+    % improve performance. Instead, one would have to use spmd to do
+    % such things. However, most of the time is spent in the two inner
+    % loops anyway
 
-      for jP=0:searchSize-1
-        for iP=0:searchSize-1
-          %disp(['(jP,iP): (',num2str(jP),',',num2str(iP),')']);
+    kernel = noisyAudio( j-halfKSize:j+halfKSize, : );
+    localWeights = zeros( searchSize, numChannels );
 
-          vJ = j-halfSearchSize+jP;
-          vI = i-halfSearchSize+iP;
-          
-          
-          if color
-            v = noisyImg( vJ-halfKSize : vJ+halfKSize, ...
-              vI-halfKSize : vI+halfKSize, : );
-          else
-            v = noisyImg( vJ-halfKSize : vJ+halfKSize, ...
-              vI-halfKSize : vI+halfKSize  );
-          end
-          
-          %Gaussian weighted L2 norm squared
-          distSq = ( kernel - v ) .* ( kernel - v );
-          weightedDistSq = distSq.*gaussKernel;
-          weightedDistSq = sum( weightedDistSq(:) ); 
-                
-          localWeights( jP+1, iP+1,: ) = exp( - weightedDistSq / hSq );
 
-        end
-      end
+    for jP=0:searchSize-1
+      vJ = j-halfSearchSize+jP;
 
-      if color
-        localWeights = localWeights / sum( sum( localWeights(:,:,1) ) ); 
-      else
-        localWeights = localWeights / sum( localWeights(:) );
-      end
-      
-      subImg = noisyImg( j-halfSearchSize : j+halfSearchSize, ...
-          i-halfSearchSize : i+halfSearchSize, : );
-      
-      deNoisedImg(j,i,:) = sum( sum( localWeights .* subImg ) ) ;
-      
+      v = noisyAudio( vJ-halfKSize : vJ+halfKSize, : );
+
+      %Gaussian weighted L2 norm squared
+      distSq = ( kernel - v ) .* ( kernel - v );
+      weightedDistSq = distSq.*gaussKernel;
+      weightedDistSq = sum( weightedDistSq(:) );
+
+      localWeights( jP+1, : ) = exp( - weightedDistSq ./ hSq );
     end
+    
+    divisionSum =  ones(searchSize,1) * sum( localWeights, 1 );
+    localWeights = localWeights ./ divisionSum;
 
+    subAudio = noisyAudio( j-halfSearchSize : j+halfSearchSize, : );
+
+    deNoisedAudio(j,:) = sum( localWeights .* subAudio, 1 ) ;
+    
     ppm.increment(j);
   end
-  
-  
+
+
   %% clean up parallel
   try % use try / catch here, since delete(struct) will raise an error.
-      delete(ppm);
+    delete(ppm);
   catch me %#ok<NASGU>
   end
-  
 
-  %% show output image
-  imshow( deNoisedImg, [] );
-  drawnow; % make sure it's displayed
-  pause(0.01); % make sure it's displayed
-  
-  %% copy output images
+  %% copy output audio
   output = struct();
-  output.deNoisedImg = deNoisedImg;
-  output.prefix = 'NLM_';
-
-  output.mse = -1;
-  if nargin > 2
-    output.mse = calculateMSE( origImg, deNoisedImg, borderSize );
-  else
-  end
+  output.deNoisedAudio = deNoisedAudio;
+  output.prefix = 'NLM_GW_';
+  output.borderSize = borderSize;
 end
