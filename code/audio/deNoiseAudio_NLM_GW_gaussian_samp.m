@@ -1,28 +1,26 @@
-function output = deNoiseAudio_NLM_GW( noisyAudio, config )
+function output = deNoiseAudio_NLM_GW_gaussian_samp( noisyAudio, config )
   %Uses gaussian weighted L2 norm
 
 
   kSize = config.kSize;
-  searchSize = config.searchSize;
   h = config.h;
   %noiseSig = config.noiseSig;
-
-  halfSearchSize = floor( searchSize/2 );
   halfKSize = floor( kSize/2 );
   hSq = h*h;
 
   a = 0.5*(kSize-1)/2;
+  searchPoints = config.searchPoints;
+  effectiveSearchWindow = config.effectiveSearchWindow;
+  aSearchWindow = 0.5*(effectiveSearchWindow-1)/2;
 
-  % wavread/audioread will return the audio channels in column vectors
   [M, numChannels] = size( noisyAudio );
-  
   %Define the gaussian kernel for the gaussian weighted L2-norm
   gaussKernel = fspecial('gaussian', [kSize 1], a)*kSize^2;
   gaussKernel = repmat(gaussKernel, [1 numChannels]);
 
   deNoisedAudio = noisyAudio;
 
-  borderSize = halfKSize+halfSearchSize+1;
+  borderSize = halfKSize+1;
 
   %% initialize progress tracker
   try % Initialization
@@ -43,18 +41,29 @@ function output = deNoiseAudio_NLM_GW( noisyAudio, config )
 
   %% perform algorithm
   for j=borderSize:M-borderSize
-    % As far as I (Thomas) know, noisyImg can't be easily sliced to
+    % As far as I (Thomas) know, noisyAudio can't be easily sliced to
     % improve performance. Instead, one would have to use spmd to do
     % such things. However, most of the time is spent in the two inner
     % loops anyway
 
-    kernel = noisyAudio( j-halfKSize:j+halfKSize, : );
-    localWeights = zeros( searchSize, numChannels );
+    kernel = noisyAudio( j-halfKSize:j+halfKSize, :);
+    localWeights = zeros( searchPoints, numChannels);
 
 
-    for jP=0:searchSize-1
-      vJ = j-halfSearchSize+jP;
+    %generate searchPoints non-repeating pixel locations using gaussian
+    %probability centered at j,i
+    pointsToUse = round(normrnd(0,aSearchWindow, 1, searchPoints));
+    pointsToUse(1,:) = pointsToUse(1,:) + j;
+    if any(pointsToUse(1,:) < borderSize)
+      pointsToUse(1, pointsToUse(1,:) < borderSize ) = borderSize;
+    elseif any(pointsToUse(1,:) > M-borderSize)
+      pointsToUse(1,pointsToUse(1,:) > M-borderSize) = M-borderSize;
+    end
 
+    %each column represents a new pixel location
+
+    for k = 1:searchPoints
+      vJ = pointsToUse(1, k);
       v = noisyAudio( vJ-halfKSize : vJ+halfKSize, : );
 
       %Gaussian weighted L2 norm squared
@@ -62,16 +71,22 @@ function output = deNoiseAudio_NLM_GW( noisyAudio, config )
       weightedDistSq = distSq.*gaussKernel;
       weightedDistSq = sum( weightedDistSq(:) );
 
-      localWeights( jP+1, : ) = exp( - weightedDistSq ./ hSq );
+      localWeights( k ,: ) = exp( - weightedDistSq / hSq );
     end
-    
-    divisionSum =  ones(searchSize,1) * sum( localWeights, 1 );
-    localWeights = localWeights ./ divisionSum;
 
-    subAudio = noisyAudio( j-halfSearchSize : j+halfSearchSize, : );
 
-    deNoisedAudio(j,:) = sum( localWeights .* subAudio, 1 ) ;
-    
+    denoisedSum = 0;
+    localWeights = localWeights ./ sum( localWeights, 1 );
+    for k=1:searchPoints
+      vJ = pointsToUse(1, k);
+      w = zeros(1,numChannels);
+      w(:) = localWeights(k,:);
+      denoisedSum = denoisedSum + noisyAudio(vJ, :).*w;
+    end
+
+    deNoisedAudio(j,:) = denoisedSum;
+
+
     ppm.increment(j);
   end
 
@@ -82,9 +97,9 @@ function output = deNoiseAudio_NLM_GW( noisyAudio, config )
   catch me %#ok<NASGU>
   end
 
-  %% copy output audio
+  %% copy output images
   output = struct();
   output.deNoisedAudio = deNoisedAudio;
-  output.prefix = 'NLM_GW_';
+  output.prefix = 'NLM_GW_gaussian_samp';
   output.borderSize = borderSize;
 end

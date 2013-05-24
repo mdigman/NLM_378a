@@ -1,14 +1,18 @@
-function output = deNoiseAudio_NLM( noisyAudio, config )
+function output = deNoiseAudio_BNLM( noisyAudio, config )
 
   kSize = config.kSize;
   searchSize = config.searchSize;
-  h = config.h;
-  %noiseSig = config.noiseSig;
 
   halfSearchSize = floor( searchSize/2 );
   halfKSize = floor( kSize/2 );
-  hSq = h*h;
-
+  
+  %Parameters for BNLM 
+  noiseSig = config.noiseSig;
+  bayes_dist_offset = sqrt(2*kSize^2 -1);
+  mean_thresh = 3*noiseSig/kSize;
+  F_thresh = 1.6;
+  kSq = kSize^2;
+  
   % wavread/audioread will return the audio channels in column vectors
   [M, numChannels] = size( noisyAudio );
   
@@ -40,26 +44,59 @@ function output = deNoiseAudio_NLM( noisyAudio, config )
     % such things. However, most of the time is spent in the two inner 
     % loops anyway 
 
+
     kernel = noisyAudio( j-halfKSize:j+halfKSize, : );
     localWeights = zeros( searchSize, numChannels );
 
+    kernel_mean = mean(kernel(:));
+    kernel_var = var(kernel(:));
 
+    %Approximate central weight (the weight where the Kernel is compared
+    %to itself) with the best non central weight.
+    max_weight = 0;
+
+    %TODO: Do mean and variance (F) test 
     for jP=0:searchSize-1
-      vJ = j-halfSearchSize+jP;
+      if (jP ~= halfSearchSize)
 
-      v = noisyAudio( vJ-halfKSize : vJ+halfKSize, : );
+        vJ = j-halfSearchSize+jP;
 
-      distSq = ( kernel - v ) .* ( kernel - v );
-      distSq = sum( distSq, 1 ); %L2 norm squared
+        v = noisyAudio( vJ-halfKSize : vJ+halfKSize, :);
 
-      localWeights( jP+1, :) = exp( - distSq ./ hSq );
+        %Discard patches with too different mean or variance from
+        %dictionary
+        patch_mean = mean(v(:));
+
+        if(abs(patch_mean - kernel_mean) > mean_thresh)
+          localWeights( jP+1, :) = 0;
+        else
+          patch_var = sum((v(:)-patch_mean).^2)/kSq;
+          F = max(patch_var,kernel_var)/min(patch_var,kernel_var);
+          if (F > F_thresh)
+            localWeights( jP+1, :) = 0;
+          else
+            distSq = ( kernel - v ) .* ( kernel - v )/noiseSig;
+            dist = sqrt(sum( distSq(:) )); %L2 distance
+
+            %Non-vectorized Bayesian Non-Local means weights
+            weight = exp( -0.5*(dist - bayes_dist_offset)^2 );
+            localWeights( jP+1, iP+1 ,:) = weight;
+
+            %Update max-weight
+            max_weight = max(max_weight, weight);
+          end
+        end
+      end
     end
+
+    %Set central weight
+    localWeights(halfSearchSize + 1, :) = max_weight;
 
     localWeights = localWeights / sum( localWeights(:) );
 
     subAudio = noisyAudio( j-halfSearchSize : j+halfSearchSize, : );
 
-    deNoisedAudio(j,:) = sum( localWeights .* subAudio, 1 );
+    deNoisedAudio(j,:) = sum( localWeights .* subAudio, 1 ) ;
 
     ppm.increment(j);
   end
@@ -71,9 +108,8 @@ function output = deNoiseAudio_NLM( noisyAudio, config )
   catch me %#ok<NASGU>
   end
   
-  %% copy output audio
+  %% copy output images
   output = struct();
   output.deNoisedAudio = deNoisedAudio;
-  output.prefix = 'NLM_';  
+  output.prefix = 'NLM_';
   output.borderSize = borderSize;
-end

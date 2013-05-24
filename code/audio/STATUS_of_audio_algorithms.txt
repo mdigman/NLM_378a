@@ -1,0 +1,12 @@
+Algorithm			written runs 	checked	tested 	audio
+									output 	stereo	quality
+
+NLM					yes		yes 	yes		no		good, at least audible. More tests needed with less noisy signals.
+NLM_GW 				yes		yes		no		no
+NLM_GW_euclidian	yes		yes		yes		no		output == input. This is obviously broken.
+NLM_GW_gauss_sampl	yes		yes		yes		?		distorted.
+BNLM				yes		run script missing, not tested yet
+NLM_mod_prior		no
+
+
+TODO: periodic search windows. Music is repetitive. Give the BPM (beat per minute) as an input to the denoiser. The denoiser will then have multiple search windows, equally distributed at k next and previous beats.
