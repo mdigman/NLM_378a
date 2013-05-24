@@ -17,7 +17,7 @@ halfKSize = floor( kSize/2 );
 
 bayes_dist_offset = sqrt(2*kSize^2 -1);
 
-eucDistsSq =  ones(kSize,1)*((1:kSize) -ceil(kSize/2));
+eucDistsSq =  ones(searchSize,1)*((1:searchSize) -ceil(searchSize/2));
 eucDistsSq = eucDistsSq.^2 + (eucDistsSq').^2;
 
 a = 0.5*(kSize-1)/2;
@@ -53,7 +53,7 @@ end
 
 
 %-- perform algorithm
-parfor j=borderSize:M-borderSize
+for j=borderSize:M-borderSize
     for i=borderSize:N-borderSize
         
         if color
