@@ -1,4 +1,4 @@
-function output = deNoiseMRI_NLM( noisyMRI, config )
+function output = deNoiseMRI_NLMwPriorMod( noisyMRI, config )
 
   kSize = config.kSize;
   searchSize = config.searchSize;
@@ -13,8 +13,15 @@ function output = deNoiseMRI_NLM( noisyMRI, config )
 
   deNoisedMRI = noisyMRI;
 
+  lambda = 1;
+
+  a = 0.5*(kSize-1)/2;
+  gaussKernel = fspecial('gaussian', kSize, a)*kSize^2;
+  smoothedMRI = imfilter(noisyMRI, gaussKernel, 'replicate');
+
   borderSize = halfKSize+halfSearchSize+1;
 
+  
   %-- initialize progress tracker
   try % Initialization
     ppm = ParforProgressStarter2(config.fileName, M-2*borderSize, 0.1);
@@ -32,11 +39,12 @@ function output = deNoiseMRI_NLM( noisyMRI, config )
   end
 
   %-- perform algorithm
-  parfor k=borderSize:K-borderSize
+  %parfor k=borderSize:K-borderSize
+  for k=borderSize:K-borderSize
     %disp(['Working on slice, ', num2str(k)]);
-    
+
     for j=borderSize:M-borderSize
-      %disp(['Working on slice/row ', num2str(k), ', ', num2str(j)]);
+      disp(['Working on slice/row ', num2str(k), ', ', num2str(j)]);
 
       for i=borderSize:N-borderSize
         %disp(['Working on slice/row/col ', ...
@@ -47,6 +55,15 @@ function output = deNoiseMRI_NLM( noisyMRI, config )
           i-halfKSize:i+halfKSize, :);
         localWeights = zeros( searchSize, searchSize, searchSize );
 
+        corrKer = smoothedMRI( k-halfKSize:k+halfKSize, ...
+          j-halfKSize:j+halfKSize, ...
+          i-halfKSize:i+halfKSize);
+        corrSearch = smoothedMRI( k-halfSearchSize:k+halfSearchSize, ...
+          j-halfSearchSize:j+halfSearchSize, ...
+          i-halfSearchSize:i+halfSearchSize );
+
+        C = normxcorr3(corrKer, corrSearch, 'same');
+        
         for kP=0:searchSize-1
           for jP=0:searchSize-1
             for iP=0:searchSize-1
@@ -72,6 +89,13 @@ function output = deNoiseMRI_NLM( noisyMRI, config )
         localWeights = exp( -localWeights / hSq );
         localWeights = localWeights / sum( localWeights(:) );
 
+        C = max( C, 0 );
+        varKer = var( corrKer(:) );
+        prior = C + exp( -( lambda * varKer) ) * (1-C);
+        prior = prior / sum( prior(:) );
+        localWeights = localWeights .* prior;
+        localWeights = localWeights / sum( localWeights(:) );
+
         subMRI = noisyMRI( k-halfSearchSize : k+halfSearchSize, ...
             j-halfSearchSize : j+halfSearchSize, ...
             i-halfSearchSize : i+halfSearchSize, : );
@@ -94,6 +118,6 @@ function output = deNoiseMRI_NLM( noisyMRI, config )
   %-- copy output images
   output = struct();
   output.deNoisedMRI = deNoisedMRI;
-  output.prefix = 'NLM_';
+  output.prefix = 'NLM_wPriorMod_';
   output.borderSize = borderSize;
 end
