@@ -1,13 +1,24 @@
-function output = deNoiseMRI_NLMwPriorMod( noisyMRI, config )
+function output = deNoiseMRI_eucNLMwModPriorPlus( noisyMRI, config )
 
   kSize = config.kSize;
   searchSize = config.searchSize;
   h = config.h;
   noiseSig = config.noiseSig;
-
+  hEuclidian = config.hEuclidian;
+  
   halfSearchSize = floor( searchSize/2 );
   halfKSize = floor( kSize/2 );
   hSq = h*h;
+  hSqEuclidian = hEuclidian^2;
+
+  bayes_dist_offset = sqrt(2*kSize^2 -1);
+
+  eucDistsSq2D = ones(searchSize,1)*((1:searchSize)-ceil(searchSize/2));
+  xEucDistsSq = repmat( eucDistsSq2D, [1, 1, searchSize] );
+  yEucDistsSq = repmat( eucDistsSq2D', [1, 1, searchSize] );
+  zEucDistsSq = permute( xEucDistsSq, [1 3 2] );
+  
+  eucDistsSq = xEucDistsSq.^2 + yEucDistsSq.^2 + zEucDistsSq.^2;
 
   [K M N] = size( noisyMRI );
 
@@ -52,7 +63,7 @@ function output = deNoiseMRI_NLMwPriorMod( noisyMRI, config )
         kernel = noisyMRI( k-halfKSize:k+halfKSize, ...
           j-halfKSize:j+halfKSize, ...
           i-halfKSize:i+halfKSize, :);
-        localWeights = zeros( searchSize, searchSize, searchSize );
+        dists = zeros( searchSize, searchSize, searchSize );
 
         corrKer = smoothedMRI( k-halfKSize:k+halfKSize, ...
           j-halfKSize:j+halfKSize, ...
@@ -78,15 +89,13 @@ function output = deNoiseMRI_NLMwPriorMod( noisyMRI, config )
 
               tmp = kernel - v;
               distSq = tmp .* tmp;
-              distSq = sum( distSq(:) ); %L2 norm squared
-
-              localWeights( kP+1, jP+1, iP+1 ) = distSq;
+              dists( kP+1, jP+1, iP+1) = sqrt(sum( distSq(:) )); %L2 distance
             end
           end
         end
 
-        localWeights = exp( -localWeights / hSq );
-        localWeights = localWeights / sum( localWeights(:) );
+        localWeights = exp( -0.5*(dists/noiseSig - bayes_dist_offset).^2 ).*...
+          exp( - eucDistsSq / hSqEuclidian );
 
         C = max( C, 0 );
         varKer = var( corrKer(:) );
@@ -102,6 +111,14 @@ function output = deNoiseMRI_NLMwPriorMod( noisyMRI, config )
         deNoisedMRI(k,j,i) = sum( localWeights(:) .* subMRI(:) );
       end
 
+      %if mod(j,5)==0
+      %  noisyImg = squeeze( noisyMRI(k,:,:) );
+      %  deNoisedImg = squeeze( deNoisedMRI(k,:,:) );
+      %  diffImg = noisyImg - deNoisedImg;
+      %  imshow( [noisyImg, deNoisedImg, abs(diffImg)], [] );
+      %  drawnow;
+      %end
+      
     end
     
     ppm.increment(j);
@@ -117,6 +134,6 @@ function output = deNoiseMRI_NLMwPriorMod( noisyMRI, config )
   %-- copy output images
   output = struct();
   output.deNoisedMRI = deNoisedMRI;
-  output.prefix = 'NLM_wPriorMod_';
+  output.prefix = 'eucNLMwModPriorPlus_';
   output.borderSize = borderSize;
 end

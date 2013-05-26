@@ -36,6 +36,7 @@ function run_deNoiseMRI_NLM
     
   
   [noisyData,scaninfo] = loadminc(noisyFile);
+  noisyData = noisyData / max( noisyData(:) );
 
   
   halfSearchSize = floor( config.searchSize/2 );

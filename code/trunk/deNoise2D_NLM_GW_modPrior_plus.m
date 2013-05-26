@@ -133,16 +133,16 @@ parfor j=borderSize:M-borderSize
         
         subImg = noisyImg( j-halfSearchSize : j+halfSearchSize, ...
             i-halfSearchSize : i+halfSearchSize, : );
-        
+
         deNoisedImg(j,i,:) = sum( sum( localWeights .* subImg ) ) ;
-        
+
     end
-    
+
     %if mod(j,50)==0
     %  imshow( [noisyImg, deNoisedImg], [] );
     %  drawnow;
     %end
-    
+
     ppm.increment(j);
 end
 
