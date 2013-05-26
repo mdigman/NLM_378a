@@ -44,11 +44,18 @@ function run_deNoiseMRI_NLMwPriorMod
   borderSize = halfKSize+halfSearchSize+1;
   
   % Note:  14 is the border size
-  subNoisyData = noisyData( 109-borderSize-8:109+borderSize+8, :, : );
+  nDataSlices = 5;
+  halfDataSlices = floor( nDataSlices / 2 );
+  subNoisyData = noisyData( 109-borderSize-halfDataSlices : ...
+                            109+borderSize+halfDataSlices, :, : );
   output = deNoiseMRI_NLMwPriorMod( subNoisyData, config );
   subDeNoised = output.deNoisedMRI;
   
+  saveNoisyData = subNoisyData( borderSize+1:end-borderSize, :, : );
+  saveDeNoised = subDeNoised( borderSize+1:end-borderSize, :, : );
+  
   saveName = [output.prefix,'deNoisedMRI.mat'];
   save(saveName, 'subNoisyData', 'subDeNoised' );
+  
   
 end

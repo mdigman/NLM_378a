@@ -1,20 +1,34 @@
-function output = deNoiseMRI_NLM( noisyMRI, config )
+function output = deNoiseMRI_eucNLMPlus( noisyMRI, config )
 
   kSize = config.kSize;
   searchSize = config.searchSize;
   h = config.h;
   noiseSig = config.noiseSig;
-
+  hEuclidian = config.hEuclidian;
+  
   halfSearchSize = floor( searchSize/2 );
   halfKSize = floor( kSize/2 );
   hSq = h*h;
+  hSqEuclidian = hEuclidian^2;
+
+  bayes_dist_offset = sqrt(2*kSize^2 -1);
+
+  eucDistsSq2D = ones(searchSize,1)*((1:searchSize)-ceil(searchSize/2));
+  xEucDistsSq = repmat( eucDistsSq2D, [1, 1, searchSize] );
+  yEucDistsSq = repmat( eucDistsSq2D', [1, 1, searchSize] );
+  zEucDistsSq = permute( xEucDistsSq, [1 3 2] );
+  
+  eucDistsSq = xEucDistsSq.^2 + yEucDistsSq.^2 + zEucDistsSq.^2;
 
   [K M N] = size( noisyMRI );
 
   deNoisedMRI = noisyMRI;
 
+  lambda = 1;
+
   borderSize = halfKSize+halfSearchSize+1;
 
+  
   %-- initialize progress tracker
   try % Initialization
     ppm = ParforProgressStarter2(config.fileName, M-2*borderSize, 0.1);
@@ -34,7 +48,7 @@ function output = deNoiseMRI_NLM( noisyMRI, config )
   %-- perform algorithm
   parfor k=borderSize:K-borderSize
     %disp(['Working on slice, ', num2str(k)]);
-    
+
     for j=borderSize:M-borderSize
       disp(['Working on slice/row ', num2str(k), ', ', num2str(j)]);
 
@@ -45,7 +59,7 @@ function output = deNoiseMRI_NLM( noisyMRI, config )
         kernel = noisyMRI( k-halfKSize:k+halfKSize, ...
           j-halfKSize:j+halfKSize, ...
           i-halfKSize:i+halfKSize, :);
-        localWeights = zeros( searchSize, searchSize, searchSize );
+        dists = zeros( searchSize, searchSize, searchSize );
 
         for kP=0:searchSize-1
           for jP=0:searchSize-1
@@ -62,14 +76,14 @@ function output = deNoiseMRI_NLM( noisyMRI, config )
 
               tmp = kernel - v;
               distSq = tmp .* tmp;
-              distSq = sum( distSq(:) ); %L2 norm squared
-
-              localWeights( kP+1, jP+1, iP+1 ) = distSq;
+              dists( kP+1, jP+1, iP+1) = sqrt(sum( distSq(:) )); %L2 distance
             end
           end
         end
 
-        localWeights = exp( -localWeights / hSq );
+        localWeights = exp( -0.5*(dists/noiseSig - bayes_dist_offset).^2 ).*...
+          exp( - eucDistsSq / hSqEuclidian );
+
         localWeights = localWeights / sum( localWeights(:) );
 
         subMRI = noisyMRI( k-halfSearchSize : k+halfSearchSize, ...
@@ -79,6 +93,14 @@ function output = deNoiseMRI_NLM( noisyMRI, config )
         deNoisedMRI(k,j,i) = sum( localWeights(:) .* subMRI(:) );
       end
 
+      %if mod(j,5)==0
+      %  noisyImg = squeeze( noisyMRI(k,:,:) );
+      %  deNoisedImg = squeeze( deNoisedMRI(k,:,:) );
+      %  diffImg = noisyImg - deNoisedImg;
+      %  imshow( [noisyImg, deNoisedImg, abs(diffImg)], [] );
+      %  drawnow;
+      %end
+      
     end
     
     ppm.increment(j);
@@ -94,6 +116,6 @@ function output = deNoiseMRI_NLM( noisyMRI, config )
   %-- copy output images
   output = struct();
   output.deNoisedMRI = deNoisedMRI;
-  output.prefix = 'NLM_';
+  output.prefix = 'eucNLMPlus_';
   output.borderSize = borderSize;
 end

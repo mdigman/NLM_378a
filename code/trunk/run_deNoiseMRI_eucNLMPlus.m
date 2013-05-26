@@ -1,4 +1,4 @@
-function run_deNoiseMRI_NLM
+function run_deNoiseMRI_eucNLMwModPriorPlus
 
   % FUNCTION HANDLE
   algorithmHandle = @deNoise2D_NLM;
@@ -11,6 +11,9 @@ function run_deNoiseMRI_NLM
   config.h = 12*config.noiseSig;
   config.noiseMean = 0;
   config.color = false;
+  
+  % OTHER CONFIG VALUES
+  config.hEuclidian=8; %50/255 causes weights to converge to a single pixel
 
   % TEST SUITE CONFIGURATION
   config.testSuiteAddNoise = true; %if false, will not add noise to the image. used when imputting images with noise already present.
@@ -38,17 +41,17 @@ function run_deNoiseMRI_NLM
   [noisyData,scaninfo] = loadminc(noisyFile);
   noisyData = noisyData / max( noisyData(:) );
 
-  
+
   halfSearchSize = floor( config.searchSize/2 );
   halfKSize = floor( config.kSize/2 );
   borderSize = halfKSize+halfSearchSize+1;
-  
+
   % Note:  14 is the border size
   nDataSlices = 5;
-  halfDataSlices = floor( nDataSlices / 2 );
+  halfDataSlices = floor( nDataSlices / 2 )
   subNoisyData = noisyData( 109-borderSize-halfDataSlices : ...
                             109+borderSize+halfDataSlices, :, : );
-  output = deNoiseMRI_NLM( subNoisyData, config );
+  output = deNoiseMRI_eucNLMPlus( subNoisyData, config );
   subDeNoised = output.deNoisedMRI;
   
   saveNoisyData = subNoisyData( borderSize+1:end-borderSize, :, : );
@@ -56,5 +59,5 @@ function run_deNoiseMRI_NLM
   
   saveName = [output.prefix,'deNoisedMRI.mat'];
   save(saveName, 'subNoisyData', 'subDeNoised' );
-
+  
 end
