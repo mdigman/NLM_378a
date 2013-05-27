@@ -6,7 +6,7 @@ algorithmHandle = @deNoise2D_NLM_stationary_fix;
 % NLM CONFIGURATION VALUES (NOMINAL)
 config = struct();
 config.kSize = 7;
-config.searchSize = 5; %nominal value is 21
+config.searchSize = 21; %nominal value is 21
 config.noiseSig = 20/255; %standard deviation!
 config.h = 12*config.noiseSig;
 config.noiseMean = 0;
@@ -23,26 +23,26 @@ config.varianceCutoff = 5*config.noiseSig^2;
 config.testSuiteUseImages = {'boat.png'};
 test_suite(algorithmHandle, config);
 
-% %test 2
-% config.noiseSig = 20/255;
-% config.h = 12*config.noiseSig;
-% config.varianceCutoff = 5*config.noiseSig^2;
-% config.testSuiteUseImages = {'lena.png'};
-% test_suite(algorithmHandle, config);
-% 
-% %test 3
-% config.noiseSig = 25/255;
-% config.h = 12*config.noiseSig;
-% config.varianceCutoff = 5*config.noiseSig^2;
-% config.testSuiteUseImages = {'barbara.png'};
-% test_suite(algorithmHandle, config);
-% 
-% %test 4
-% config.noiseSig = 35/255;
-% config.h = 12*config.noiseSig;
-% config.varianceCutoff = 5*config.noiseSig^2;
-% config.testSuiteUseImages = {'mandrill.png'};
-% test_suite(algorithmHandle, config);
+%test 2
+config.noiseSig = 20/255;
+config.h = 12*config.noiseSig;
+config.varianceCutoff = 5*config.noiseSig^2;
+config.testSuiteUseImages = {'lena.png'};
+test_suite(algorithmHandle, config);
+
+%test 3
+config.noiseSig = 25/255;
+config.h = 12*config.noiseSig;
+config.varianceCutoff = 5*config.noiseSig^2;
+config.testSuiteUseImages = {'barbara.png'};
+test_suite(algorithmHandle, config);
+
+%test 4
+config.noiseSig = 35/255;
+config.h = 12*config.noiseSig;
+config.varianceCutoff = 5*config.noiseSig^2;
+config.testSuiteUseImages = {'mandrill.png'};
+test_suite(algorithmHandle, config);
 
 %test 5
 %can't find the image
