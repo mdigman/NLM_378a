@@ -17,6 +17,9 @@ config.testSuiteAddNoise = true; %if false, will not add noise to the image. use
 config.testSuiteUseExternalImage = false; %if true, will not read in any images, but will process based on what you pass in
 config.color = false; %if true, will not convert to gray scale and will compute similarities based on color (RGB)
 
+% OTHER CONFIG VALUES
+config.hEuclidian=8; %50/255 causes weights to converge to a single pixel
+
 %test 1
 %config.noiseSig = 8/255;
 %config.h = 12*config.noiseSig;
