@@ -1,0 +1,119 @@
+function output = deNoise2D_PND( noisyImg, config )
+
+[height,width] = size(noisyImg);
+kernel_edge = 7;
+window_edge = 21;
+half_kernel = floor(kernel_edge/2);
+half_window = floor(window_edge/2);
+
+% Pick Random Subsample of Pixels (num_img_pixels/10 pixels)
+num_img_pixels = height*width;
+corner_pixels = half_kernel*half_kernel;
+side_pixels = half_kernel*(height-2*half_kernel);
+top_pixels = half_kernel*(width-2*half_kernel);
+num_border_pixels = 4*corner_pixels + 2*side_pixels + 2*top_pixels;
+num_pixels = num_img_pixels - num_border_pixels;
+
+rand_ind = randi([1,num_pixels],[num_img_pixels/10,1]);
+[y,x] = ind2sub([height-2*half_kernel,width-2*half_kernel],rand_ind);
+y = y + half_kernel;
+x = x + half_kernel;
+psi = [y,x];
+
+
+% -----------PCA-------------
+% Collect Randomly selected Neighborhoods
+N = size(psi,1);
+neighborhoods = zeros(kernel_edge^2,N);
+for i = 1:N
+    neighborhoods(:,i) = vec(noisyImg(psi(i,1)-half_kernel:psi(i,1)+half_kernel, ...
+                                      psi(i,2)-half_kernel:psi(i,2)+half_kernel));
+end
+
+% Perform PCA on Randomly Selected Neighborhoods
+M = kernel_edge^2;
+[eig_vec,eig_val] = deNoise2D_PND_PCA(neighborhoods);
+
+% % Show top 6 neighborhoods
+% figure(1)
+% for i = 1:6
+%     subplot(2,3,i);
+%     imshow(reshape(eig_vec(:,end-i+1),kernel_edge,kernel_edge));
+%     title(i)
+% end
+
+% Capture Smallest Eigenvalue
+sigma_hat = sqrt(eig_val(1,1));
+
+% -----------Parallel Analysis-------------
+d = deNoise2D_PND_parallel(neighborhoods,eig_val);
+
+
+% Use only the d largest eigenvectors as our space
+b = eig_vec(:,end:-1:end-5);
+
+% Estimate h
+m = 2.84;
+c = 13.81/256;
+h = m*sigma_hat+c;
+
+% Project all neighborhoods into the d-dimensional subspace
+all_nhoods = zeros(height-2*half_kernel,width-2*half_kernel,d);
+for i = half_kernel+1:height-half_kernel
+    if(mod(i,50) == 0); fprintf('Projecting Row %d...\n',i); end
+    for j = half_kernel+1:width-half_kernel
+        all_nhoods(i,j,:) = b'*vec(noisyImg(i-half_kernel:i+half_kernel, ...
+                                            j-half_kernel:j+half_kernel));
+    end
+end
+
+% Do NLM
+fprintf('Doing NLM\n')
+deNoisedImg = noisyImg;
+for i = half_window+half_kernel+1:height-half_window-half_kernel
+    if(mod(i,10) == 0); fprintf('Denoising Row %d...\n',i);end
+    for j = half_window+half_kernel+1:width-half_window-half_kernel
+        % Get center neighborhood
+        center = reshape(all_nhoods(i,j,:),d,1);
+        % Get weights
+        weights = zeros(window_edge,window_edge);
+        for k = -half_window:half_window
+            for l = -half_window:half_window
+                f_d = reshape(all_nhoods(i+k,j+l,:),d,1);
+                weights(k+half_window+1,l+half_window+1) = ...
+                                            exp(-norm(center-f_d,2)^2/h^2);
+            end
+        end
+        % Normalize weights
+        weights = 1/(sum(weights(:))).*weights;
+        % Estimate Pixel
+        u_tmp = noisyImg(i-half_window:i+half_window,j-half_window:j+half_window) ...
+                .*weights;
+        deNoisedImg(i,j) = sum(u_tmp(:));
+    end
+end
+
+% figure(2);imshow(img);title('Original')
+% figure(3);imshow(noisyImg);title(sprintf('Noisy - sigma = %d', sigma*256))
+% figure(4);imshow(deNoisedImg);title('Denoised')
+% 
+% MSE =  norm(vec(img(half_window+1:end-half_window, ...
+%                     half_window+1:end-half_window))... 
+%             - ...
+%             vec(deNoisedImg(half_window+1:end-half_window, ...
+%                             half_window+1:end-half_window)) ...
+%             ,2);
+% disp(sprintf('MSE = %d',MSE))
+
+%-- show output image
+imshow( deNoisedImg, [] );
+drawnow; % make sure it's displayed
+pause(0.01); % make sure it's displayed
+
+
+borderSize = half_kernel+half_window+1;
+%-- copy output images
+output = struct();
+output.deNoisedImg = deNoisedImg;
+output.prefix = 'NLM_';
+output.borderSize = borderSize;

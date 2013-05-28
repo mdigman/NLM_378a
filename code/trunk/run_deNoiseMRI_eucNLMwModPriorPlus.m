@@ -30,27 +30,36 @@ function run_deNoiseMRI_eucNLMwModPriorPlus
       inDir = ['../../data/images'];
       addpath('./matlab-ParforProgress2') % Add path for parallel progress tracking
       noisyFile = '../../data/brainWeb/pd_icbm_normal_1mm_pn5_rf20.mnc';
+      imgsDir = '../../data/MRI/Series8_144_4CF9EA89.dcm_200';
+      %imgsDir = '../../data/MRI/Series2_161_722100_222';
   else
       fileSepChar = '\';
       inDir = ['..\..\data\images'];
       addpath('.\matlab-ParforProgress2') % Add path for parallel progress tracking
       noisyFile = '..\..\data\brainWeb\pd_icbm_normal_1mm_pn5_rf20.mnc';
+      imgsDir = '..\..\data\MRI\Series8_144_4CF9EA89.dcm_200';
+      %imgsDir = '..\..\data\MRI\Series2_161_722100_222';
   end
-    
-  
-  [noisyData,scaninfo] = loadminc(noisyFile);
-  noisyData = noisyData / max( noisyData(:) );
-
 
   halfSearchSize = floor( config.searchSize/2 );
   halfKSize = floor( config.kSize/2 );
   borderSize = halfKSize+halfSearchSize+1;
 
+  simulated = 1;
+  nDataSlices = 3;
   % Note:  14 is the border size
-  nDataSlices = 5;
-  halfDataSlices = floor( nDataSlices / 2 )
-  subNoisyData = noisyData( 109-borderSize-halfDataSlices : ...
-                            109+borderSize+halfDataSlices, :, : );
+  if simulated
+    [noisyData,scaninfo] = loadminc(noisyFile);
+    halfDataSlices = floor( nDataSlices / 2 )
+    subNoisyData = noisyData( 109-borderSize-halfDataSlices : ...
+                              109+borderSize+halfDataSlices, :, : );
+  else
+    noisyData = loadMriImages( imgsDir );
+    subNoisyData = noisyData( 30-borderSize-halfDataSlices : ...
+                              30+borderSize+halfDataSlices, :, : );
+  end
+  subNoisyData = subNoisyData / max( subNoisyData(:) );
+
   output = deNoiseMRI_eucNLMwModPriorPlus( subNoisyData, config );
   subDeNoised = output.deNoisedMRI;
   

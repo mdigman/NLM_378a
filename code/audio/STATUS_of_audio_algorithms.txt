@@ -1,12 +1,16 @@
-Algorithm			written runs 	checked	tested 	audio
-									output 	stereo	quality
+Algorithm				written runs 	checked	tested 	audio quality /
+										output 	stereo	comments
 
-NLM					yes		yes 	yes		no		good, at least audible. More tests needed with less noisy signals.
-NLM_GW 				yes		yes		no		no
-NLM_GW_euclidian	yes		yes		yes		no		output == input. This is obviously broken.
-NLM_GW_gauss_sampl	yes		yes		yes		?		distorted.
-BNLM				yes		run script missing, not tested yet
-NLM_mod_prior		no
+NLM						yes		yes 	yes		yes		good, at least audible. More tests needed with less noisy signals.
+NLM_GW 					yes		yes		no		no
+NLM_GW_euclidian		yes		yes		yes		no		output == input. This is obviously broken.
+NLM_GW_gauss_sampl		yes		yes		yes		no		distorted.
+BNLM					yes		run script missing, not tested yet. Also noticed changes to the original BNLM for images that are not in this file yet.
+NLM_mod_prior			no
+
+
+### NEW ####
+NLM_euc_modPrior_plus	yes		no 						I developed it for stereo, but it didn't work. I am not sure what the algorithm does, so I tried to get the mono version working (this is like getting the grayscale version to work with audio). I have troubles replacing normxcorr2, the twodimensional normalized cross correlation, with a onedimensional correspondent. I tried using xcorr, which doesn't normalize by default. The option 'coeff' seems to normalize to 1 at correlation point 0, so that is what we want I guess. However this only works if both input matrices corrKer and corrSearch have the same size (which they don't). Unfortunately, it doesn't even work without normalization: they output vector should be of the same size as corrSearch+2*corrKer, but it's 2*corrSearch. It would be great if I could get some help on this. Right now I am again working with normxcorr2 again, as it returns a one-dimensional vector on one-dimensional input data, but I'm not sure it's correct.
 
 
 TODO: periodic search windows. Music is repetitive. Give the BPM (beat per minute) as an input to the denoiser. The denoiser will then have multiple search windows, equally distributed at k next and previous beats.

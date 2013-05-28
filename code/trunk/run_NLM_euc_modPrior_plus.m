@@ -10,7 +10,7 @@ config.searchSize = 21; %nominal value is 21
 config.noiseSig = 20/255; %standard deviation!
 config.h = 12*config.noiseSig;
 config.noiseMean = 0;
-config.color = false;
+config.color = true;
 
 % TEST SUITE CONFIGURATION
 config.testSuiteAddNoise = true; %if false, will not add noise to the image. used when imputting images with noise already present.
