@@ -132,7 +132,7 @@ end
 
 
 %-- show output image
-imshow( deNoisedImg, [] );
+%imshow( deNoisedImg, [] );
 drawnow; % make sure it's displayed
 pause(0.01); % make sure it's displayed
 
