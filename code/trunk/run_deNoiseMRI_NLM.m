@@ -36,6 +36,7 @@ function run_deNoiseMRI_NLM
     
   
   [noisyData,scaninfo] = loadminc(noisyFile);
+  noisyData = noisyData / max( noisyData(:) );
 
   
   halfSearchSize = floor( config.searchSize/2 );
@@ -43,10 +44,17 @@ function run_deNoiseMRI_NLM
   borderSize = halfKSize+halfSearchSize+1;
   
   % Note:  14 is the border size
-  subNoisyData = noisyData( 109-borderSize-8:109+borderSize+8, :, : );
-  deNoiseMRI_NLM( subNoisyData, config );
+  nDataSlices = 5;
+  halfDataSlices = floor( nDataSlices / 2 );
+  subNoisyData = noisyData( 109-borderSize-halfDataSlices : ...
+                            109+borderSize+halfDataSlices, :, : );
+  output = deNoiseMRI_NLM( subNoisyData, config );
   subDeNoised = output.deNoisedMRI;
   
-  save('deNoisedMRI.mat', subNoisyData, subDeNoised );
+  saveNoisyData = subNoisyData( borderSize+1:end-borderSize, :, : );
+  saveDeNoised = subDeNoised( borderSize+1:end-borderSize, :, : );
   
+  saveName = [output.prefix,'deNoisedMRI.mat'];
+  save(saveName, 'subNoisyData', 'subDeNoised' );
+
 end

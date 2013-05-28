@@ -1,0 +1,2 @@
+run_NLM_GW_gaussian_samp
+run_deNoise2D_NLM_GW_euclidian

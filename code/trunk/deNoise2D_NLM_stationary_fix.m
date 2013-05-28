@@ -18,6 +18,11 @@ deNoisedImg = noisyImg;
 
 borderSize = halfKSize+halfSearchSize+1;
 
+[M N] = size( noisyImg );
+%Define the gaussian kernel for the gaussian weighted L2-norm
+a = 0.5*(kSize-1)/2;
+gaussKernel = fspecial('gaussian', kSize, a)*kSize^2;
+
 %% initialize progress tracker
 try % Initialization
     ppm = ParforProgressStarter2(config.fileName, M-2*borderSize, 0.1);
@@ -56,9 +61,10 @@ parfor j=borderSize:M-borderSize
                     vI-halfKSize : vI+halfKSize  );
                 
                 distSq = ( kernel - v ) .* ( kernel - v );
-                distSq = sum( distSq(:) );
+                weightedDistSq = distSq.*gaussKernel;
+                weightedDistSq = sum( weightedDistSq(:) );
                 
-                localWeights( jP+1, iP+1 ) = exp( - distSq / hSq );
+                localWeights( jP+1, iP+1,: ) = exp( - weightedDistSq / hSq );
                 
             end
         end

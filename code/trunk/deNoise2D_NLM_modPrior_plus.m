@@ -53,28 +53,22 @@ parfor j=borderSize:M-borderSize
         if color
             kernel = noisyImg( j-halfKSize:j+halfKSize, ...
                 i-halfKSize:i+halfKSize, :);
-            search = noisyImg( j-halfSearchSize:j+halfSearchSize, ...
-                i-halfSearchSize:i+halfSearchSize, : );
             corrKer = smoothedImg( j-halfKSize:j+halfKSize, ...
                 i-halfKSize:i+halfKSize, :);
             corrSearch = smoothedImg( j-halfSearchSize:j+halfSearchSize, ...
                 i-halfSearchSize:i+halfSearchSize, : );
-            %localWeights = zeros( searchSize, searchSize , 3);
             dists = zeros( searchSize, searchSize , 3);
             C1 = normxcorr2(corrKer(:,:,1), corrSearch(:,:,1) );
-            C2 = normxcorr2(corrKer(:,:,1), corrSearch(:,:,1) );
-            C3 = normxcorr2(corrKer(:,:,1), corrSearch(:,:,1) );
+            C2 = normxcorr2(corrKer(:,:,2), corrSearch(:,:,2) );
+            C3 = normxcorr2(corrKer(:,:,3), corrSearch(:,:,3) );
             C = ( C1 + C2 + C3 ) / 3;
         else
             kernel = noisyImg( j-halfKSize:j+halfKSize, ...
                 i-halfKSize:i+halfKSize );
-            search = noisyImg( j-halfSearchSize:j+halfSearchSize, ...
-                i-halfSearchSize:i+halfSearchSize );
             corrKer = smoothedImg( j-halfKSize:j+halfKSize, ...
                 i-halfKSize:i+halfKSize);
             corrSearch = smoothedImg( j-halfSearchSize:j+halfSearchSize, ...
                 i-halfSearchSize:i+halfSearchSize );
-            %localWeights = zeros( searchSize, searchSize );
             dists = zeros( searchSize, searchSize);
             C = normxcorr2(corrKer, corrSearch);
         end
@@ -86,8 +80,7 @@ parfor j=borderSize:M-borderSize
                 
                 vJ = j-halfSearchSize+jP;
                 vI = i-halfSearchSize+iP;
-                
-                
+
                 if color
                     v = noisyImg( vJ-halfKSize : vJ+halfKSize, ...
                         vI-halfKSize : vI+halfKSize, : );
@@ -158,7 +151,7 @@ end
 
 
 %-- show output image
-imshow( deNoisedImg, [] );
+%imshow( deNoisedImg, [] );
 drawnow; % make sure it's displayed
 pause(0.01); % make sure it's displayed
 

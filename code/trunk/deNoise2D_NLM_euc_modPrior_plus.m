@@ -51,37 +51,31 @@ catch me % make sure "ParforProgressStarter2" didn't get moved to a different di
     end
 end
 
+dists = zeros( searchSize, searchSize);
 
 %-- perform algorithm
-parfor j=borderSize:M-borderSize
+%parfor j=borderSize:M-borderSize
+for j=borderSize:M-borderSize
     for i=borderSize:N-borderSize
         
         if color
             kernel = noisyImg( j-halfKSize:j+halfKSize, ...
                 i-halfKSize:i+halfKSize, :);
-            search = noisyImg( j-halfSearchSize:j+halfSearchSize, ...
-                i-halfSearchSize:i+halfSearchSize, : );
             corrKer = smoothedImg( j-halfKSize:j+halfKSize, ...
                 i-halfKSize:i+halfKSize, :);
             corrSearch = smoothedImg( j-halfSearchSize:j+halfSearchSize, ...
                 i-halfSearchSize:i+halfSearchSize, : );
-            %localWeights = zeros( searchSize, searchSize , 3);
-            dists = zeros( searchSize, searchSize , 3);
             C1 = normxcorr2(corrKer(:,:,1), corrSearch(:,:,1) );
-            C2 = normxcorr2(corrKer(:,:,1), corrSearch(:,:,1) );
-            C3 = normxcorr2(corrKer(:,:,1), corrSearch(:,:,1) );
+            C2 = normxcorr2(corrKer(:,:,2), corrSearch(:,:,2) );
+            C3 = normxcorr2(corrKer(:,:,3), corrSearch(:,:,3) );
             C = ( C1 + C2 + C3 ) / 3;
         else
             kernel = noisyImg( j-halfKSize:j+halfKSize, ...
                 i-halfKSize:i+halfKSize );
-            search = noisyImg( j-halfSearchSize:j+halfSearchSize, ...
-                i-halfSearchSize:i+halfSearchSize );
             corrKer = smoothedImg( j-halfKSize:j+halfKSize, ...
                 i-halfKSize:i+halfKSize);
             corrSearch = smoothedImg( j-halfSearchSize:j+halfSearchSize, ...
                 i-halfSearchSize:i+halfSearchSize );
-            %localWeights = zeros( searchSize, searchSize );
-            dists = zeros( searchSize, searchSize);
             C = normxcorr2(corrKer, corrSearch);
         end
         C = C( halfKSize+1:end-halfKSize, halfKSize+1:end-halfKSize );
@@ -89,11 +83,10 @@ parfor j=borderSize:M-borderSize
         for jP=0:searchSize-1
             for iP=0:searchSize-1
                 %disp(['(jP,iP): (',num2str(jP),',',num2str(iP),')']);
-                
+
                 vJ = j-halfSearchSize+jP;
                 vI = i-halfSearchSize+iP;
-                
-                
+
                 if color
                     v = noisyImg( vJ-halfKSize : vJ+halfKSize, ...
                         vI-halfKSize : vI+halfKSize, : );
@@ -101,18 +94,17 @@ parfor j=borderSize:M-borderSize
                     v = noisyImg( vJ-halfKSize : vJ+halfKSize, ...
                         vI-halfKSize : vI+halfKSize  );
                 end
-                
+
                 %Gaussian weighted L2 norm squared
                 distSq = ( kernel - v ) .* ( kernel - v );
-                dists( jP+1, iP+1 ,:) = sqrt(sum( distSq(:) )); %L2 distance
-                
+                dists( jP+1, iP+1, :) = sqrt(sum( distSq(:) )); %L2 distance
             end
         end
-        
+
         %Non-vectorized Bayesian Non-Local means weights
         localWeights = exp( -0.5*(dists/noiseSig - bayes_dist_offset).^2 ).*...
           exp( - eucDistsSq / hSqEuclidian );
-        
+
         C = max( C, 0 );
         if color
             tmp = corrKer(:,:,1);
@@ -126,7 +118,6 @@ parfor j=borderSize:M-borderSize
             varKer = var( corrKer(:) );
         end
         prior = C + exp( -( lambda * varKer) ) * (1-C);
-        prior = prior / ( sum(sum(prior)));
         if color
             localWeights(:,:,1) = localWeights(:,:,1) .* prior;
             localWeights(:,:,2) = localWeights(:,:,1);
@@ -141,7 +132,6 @@ parfor j=borderSize:M-borderSize
             i-halfSearchSize : i+halfSearchSize, : );
         
         deNoisedImg(j,i,:) = sum( sum( localWeights .* subImg ) ) ;
-        
     end
     
     %if mod(j,50)==0
@@ -168,5 +158,5 @@ pause(0.01); % make sure it's displayed
 %-- copy output images
 output = struct();
 output.deNoisedImg = deNoisedImg;
-output.prefix = 'NLM_';
+output.prefix = 'NLM_euc_modPrior_plus_';
 output.borderSize = borderSize;

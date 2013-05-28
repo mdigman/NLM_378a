@@ -4,4 +4,5 @@ universe = vanilla
 output = condor/run_deNoiseMRI_NLM.output.$(Process)
 error = condor/run_deNoiseMRI_NLM.error.$(Process)
 log = condor/run_deNoiseMRI_NLM.log.$(Process)
+notify_user = thomaswa@stanford.edu
 queue
