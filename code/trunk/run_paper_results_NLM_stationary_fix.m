@@ -1,7 +1,7 @@
-function run_paper_results_NLM
+function run_paper_results_NLM_stationary_fix
 
 % FUNCTION HANDLE
-algorithmHandle = @deNoise2D_NLM;
+algorithmHandle = @deNoise2D_NLM_stationary_fix;
 
 % NLM CONFIGURATION VALUES (NOMINAL)
 config = struct();
@@ -19,24 +19,28 @@ config.color = false; %if true, will not convert to gray scale and will compute 
 %test 1
 config.noiseSig = 8/255;
 config.h = 12*config.noiseSig;
+config.varianceCutoff = 5*config.noiseSig^2;
 config.testSuiteUseImages = {'boat.png'};
 test_suite(algorithmHandle, config);
 
 %test 2
 config.noiseSig = 20/255;
 config.h = 12*config.noiseSig;
+config.varianceCutoff = 5*config.noiseSig^2;
 config.testSuiteUseImages = {'lena.png'};
 test_suite(algorithmHandle, config);
 
 %test 3
 config.noiseSig = 25/255;
 config.h = 12*config.noiseSig;
+config.varianceCutoff = 5*config.noiseSig^2;
 config.testSuiteUseImages = {'barbara.png'};
 test_suite(algorithmHandle, config);
 
 %test 4
 config.noiseSig = 35/255;
 config.h = 12*config.noiseSig;
+config.varianceCutoff = 5*config.noiseSig^2;
 config.testSuiteUseImages = {'mandrill.png'};
 test_suite(algorithmHandle, config);
 

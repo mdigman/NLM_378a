@@ -1,7 +1,7 @@
-function run_paper_results_NLM
+function run_paper_results_NLM_GW
 
 % FUNCTION HANDLE
-algorithmHandle = @deNoise2D_NLM;
+algorithmHandle = @deNoise2D_NLM_GW;
 
 % NLM CONFIGURATION VALUES (NOMINAL)
 config = struct();

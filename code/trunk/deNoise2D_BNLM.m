@@ -146,7 +146,7 @@ function output = deNoise2D_BNLM( noisyImg, config, origImg )
   
 
   %% show output image
-  imshow( deNoisedImg, [] );
+  %imshow( deNoisedImg, [] );
   drawnow; % make sure it's displayed
   pause(0.01); % make sure it's displayed
   

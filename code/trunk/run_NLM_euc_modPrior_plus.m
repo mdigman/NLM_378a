@@ -20,7 +20,7 @@ config.testSuiteUseExternalImage = false; %if true, will not read in any images,
 config.testSuiteUseImages = {'lena.png'}; %ex: testSuiteUseImages = {'lena.png', 'boat.png'} will only run on the two images, but empty {} runs all
 
 % OTHER CONFIG VALUES
-config.hEuclidian=8; %50/255 causes weights to converge to a single pixel
+config.hEuclidian=2; %50/255 causes weights to converge to a single pixel
 
 test_suite(algorithmHandle, config);
 
