@@ -30,7 +30,7 @@ for i = 1:N
 %                                       psi(i,2)-half_kernel:psi(i,2)+half_kernel));
     tmp_nhoods = noisyImg(psi(i,1)-half_kernel:psi(i,1)+half_kernel, ...
                           psi(i,2)-half_kernel:psi(i,2)+half_kernel);
-    neighborhoods(:,i) = tmp_nhoods;
+    neighborhoods(:,i) = tmp_nhoods(:);
 end
 
 % Perform PCA on Randomly Selected Neighborhoods
@@ -69,7 +69,7 @@ for i = half_kernel+1:height-half_kernel
 %                                             j-half_kernel:j+half_kernel));
         tmp_noisyImg = noisyImg(i-half_kernel:i+half_kernel, ...
                                 j-half_kernel:j+half_kernel);
-        all_nhoods(i,j,:) = b'*tmp_noisyImg;
+        all_nhoods(i,j,:) = b'*tmp_noisyImg(:);
     end
 end
 
