@@ -26,8 +26,11 @@ psi = [y,x];
 N = size(psi,1);
 neighborhoods = zeros(kernel_edge^2,N);
 for i = 1:N
-    neighborhoods(:,i) = vec(noisyImg(psi(i,1)-half_kernel:psi(i,1)+half_kernel, ...
-                                       psi(i,2)-half_kernel:psi(i,2)+half_kernel));
+%     neighborhoods(:,i) = vec(noisyImg(psi(i,1)-half_kernel:psi(i,1)+half_kernel, ...
+%                                        psi(i,2)-half_kernel:psi(i,2)+half_kernel));
+    tmp_nhoods = noisyImg(psi(i,1)-half_kernel:psi(i,1)+half_kernel, ...
+                          psi(i,2)-half_kernel:psi(i,2)+half_kernel);
+    neighborhoods(:,i) = tmp_nhoods(:);
 end
 
 % Perform PCA on Randomly Selected Neighborhoods
@@ -62,8 +65,11 @@ all_nhoods = zeros(height-2*half_kernel,width-2*half_kernel,d);
 for i = half_kernel+1:height-half_kernel
     if(mod(i,50) == 0); fprintf('Projecting Row %d...\n',i); end
     for j = half_kernel+1:width-half_kernel
-        all_nhoods(i,j,:) = b'*vec(noisyImg(i-half_kernel:i+half_kernel, ...
-                                             j-half_kernel:j+half_kernel));
+%         all_nhoods(i,j,:) = b'*vec(noisyImg(i-half_kernel:i+half_kernel, ...
+%                                              j-half_kernel:j+half_kernel));
+        tmp_noisyImg = noisyImg(i-half_kernel:i+half_kernel, ...
+                                j-half_kernel:j+half_kernel);
+        all_nhoods(i,j,:) = b'*tmp_noisyImg(:);
     end
 end
 
