@@ -41,22 +41,22 @@ catch me % make sure "ParforProgressStarter2" didn't get moved to a different di
 end
 
 %Calculate histogram for each of the patches
-empPatchPmfs = cell(M,N);
+empPatchPmfs = zeros(M,N,256);
 
 parfor j=halfKSize+1:M-halfKSize-1
     for i=halfKSize+1:N-halfKSize-1
       patch = noisyImg( j-halfKSize:j+halfKSize, ...
                 i-halfKSize:i+halfKSize );
-      empPatchPmfs{j,i} = histc(patch(:),(0:1/255:1))/kSq;       
+      empPatchPmfs(j,i,:) = histc(patch(:),(0:1/255:1))/kSq;       
     end
 end
 
 %-- perform algorithm
-parfor j=borderSize:M-borderSize
+for j=borderSize:M-borderSize
     for i=borderSize:N-borderSize
         
       KLDivs = zeros( searchSize, searchSize);
-      empPmfKernel = empPatchPmfs{j,i};
+      empPmfKernel = empPatchPmfs(j,i,:);
       
         if color
             kernel = noisyImg( j-halfKSize:j+halfKSize, ...
@@ -90,7 +90,7 @@ parfor j=borderSize:M-borderSize
                 distSqs( jP+1, iP+1,: ) = sum( distSq(:) );
                 
                 %KL-divergence
-                empPmf = empPatchPmfs{vJ,vI};
+                empPmf = empPatchPmfs(vJ,vI,:);
                 sup = find(empPmf > 1e-12 & empPmfKernel > 1e-12);
                 KLDivs( jP+1, iP+1,: ) = sum(empPmfKernel(sup).*...
                   log2(empPmfKernel(sup)./empPmf(sup)));
@@ -102,16 +102,18 @@ parfor j=borderSize:M-borderSize
         localWeights = exp( - distSqs / hSq );
         
         if color
-            localWeights = localWeights / sum( sum( localWeights(:,:,1) ) );
             KLDivs = repmat(KLDivs,[1 3]);
+            localWeights = localWeights.*KLDivs;
+            localWeights = localWeights / sum( sum( localWeights(:,:,1) ) );
         else
+            localWeights = localWeights.*KLDivs;
             localWeights = localWeights / sum( localWeights(:) );
         end
         
         subImg = noisyImg( j-halfSearchSize : j+halfSearchSize, ...
             i-halfSearchSize : i+halfSearchSize, : );
         
-        deNoisedImg(j,i,:) = sum( sum(KLDivs.* localWeights .* subImg ) ) ;
+        deNoisedImg(j,i,:) = sum( sum(localWeights .* subImg ) ) ;
         
     end
     
