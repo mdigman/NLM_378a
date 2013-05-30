@@ -5,6 +5,7 @@ kernel_edge = 7;
 window_edge = 21;
 half_kernel = floor(kernel_edge/2);
 half_window = floor(window_edge/2);
+sigma = config.noiseSig;
 
 % Pick Random Subsample of Pixels (num_img_pixels/10 pixels)
 num_img_pixels = height*width;
@@ -53,12 +54,12 @@ d = deNoise2D_PND_parallel(neighborhoods,eig_val);
 
 
 % Use only the d largest eigenvectors as our space
-b = eig_vec(:,end:-1:end-5);
+b = eig_vec(:,end:-1:end-d+1);
 
 % Estimate h
 m = 2.84;
 c = 13.81/256;
-h = m*sigma_hat+c;
+h = m*sigma+c;
 
 % Project all neighborhoods into the d-dimensional subspace
 all_nhoods = zeros(height-2*half_kernel,width-2*half_kernel,d);
