@@ -11,6 +11,9 @@ function run_deNoiseMRI_NLMwPriorMod
   config.h = 12*config.noiseSig;
   config.noiseMean = 0;
   config.color = false;
+  
+  % OTHER CONFIG VALUES
+  config.hEuclidian=8; %50/255 causes weights to converge to a single pixel
 
   % TEST SUITE CONFIGURATION
   config.testSuiteAddNoise = true; %if false, will not add noise to the image. used when imputting images with noise already present.
@@ -27,35 +30,54 @@ function run_deNoiseMRI_NLMwPriorMod
       inDir = ['../../data/images'];
       addpath('./matlab-ParforProgress2') % Add path for parallel progress tracking
       noisyFile = '../../data/brainWeb/pd_icbm_normal_1mm_pn5_rf20.mnc';
+      imgsDir = '../../data/MRI/Series8_144_4CF9EA89.dcm_200';
+      %imgsDir = '../../data/MRI/Series2_161_722100_222';
   else
       fileSepChar = '\';
       inDir = ['..\..\data\images'];
       addpath('.\matlab-ParforProgress2') % Add path for parallel progress tracking
       noisyFile = '..\..\data\brainWeb\pd_icbm_normal_1mm_pn5_rf20.mnc';
+      imgsDir = '..\..\data\MRI\Series8_144_4CF9EA89.dcm_200';
+      %imgsDir = '..\..\data\MRI\Series2_161_722100_222';
   end
-    
-  
-  [noisyData,scaninfo] = loadminc(noisyFile);
-  noisyData = noisyData / max( noisyData(:) );
 
-  
   halfSearchSize = floor( config.searchSize/2 );
   halfKSize = floor( config.kSize/2 );
   borderSize = halfKSize+halfSearchSize+1;
-  
+
+  simulated = 0;
+  nDataSlices = 1;
   % Note:  14 is the border size
-  nDataSlices = 5;
-  halfDataSlices = floor( nDataSlices / 2 );
-  subNoisyData = noisyData( 109-borderSize-halfDataSlices : ...
-                            109+borderSize+halfDataSlices, :, : );
+  if simulated
+    [noisyData,scaninfo] = loadminc(noisyFile);
+    halfDataSlices = floor( nDataSlices / 2 );
+    subNoisyData = noisyData( 109-borderSize-halfDataSlices : ...
+                              109+borderSize+halfDataSlices, :, : );
+  else
+    noisyData = loadMriImages( imgsDir );
+    noisyData = permute( noisyData, [3, 1, 2] );
+    halfDataSlices = floor( nDataSlices / 2 );
+    subNoisyData = noisyData( 30-borderSize-halfDataSlices : ...
+                              30+borderSize+halfDataSlices, :, : );
+  end
+  subNoisyData = subNoisyData / max( subNoisyData(:) );
+
   output = deNoiseMRI_NLMwPriorMod( subNoisyData, config );
   subDeNoised = output.deNoisedMRI;
-  
-  saveNoisyData = subNoisyData( borderSize+1:end-borderSize, :, : );
-  saveDeNoised = subDeNoised( borderSize+1:end-borderSize, :, : );
-  
-  saveName = [output.prefix,'deNoisedMRI.mat'];
+
+  if simulated
+    saveNoisyData = subNoisyData( borderSize+1:end-borderSize, :, : );
+    saveDeNoised = subDeNoised( borderSize+1:end-borderSize, :, : );
+  else
+    saveNoisyData = subNoisyData( :, :, borderSize+1:end-borderSize );
+    saveDeNoised = subDeNoised( :, :, borderSize+1:end-borderSize );
+  end
+
+  if simulated
+    saveName = [output.prefix,'deNoisedMRI.mat'];
+  else
+    saveName = [output.prefix,'deNoisedMRI_real.mat'];
+  end
   save(saveName, 'subNoisyData', 'subDeNoised' );
-  
   
 end
