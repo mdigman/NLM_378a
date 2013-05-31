@@ -158,5 +158,5 @@ pause(0.01); % make sure it's displayed
 %-- copy output images
 output = struct();
 output.deNoisedImg = deNoisedImg;
-output.prefix = 'NLM_';
+output.prefix = 'NLM_modPrior_';
 output.borderSize = borderSize;

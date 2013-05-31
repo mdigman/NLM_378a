@@ -45,27 +45,33 @@ function run_deNoiseMRI_eucNLMwModPriorPlus
   halfKSize = floor( config.kSize/2 );
   borderSize = halfKSize+halfSearchSize+1;
 
-  simulated = 1;
+  simulated = 0;
   nDataSlices = 3;
   % Note:  14 is the border size
   if simulated
     [noisyData,scaninfo] = loadminc(noisyFile);
-    halfDataSlices = floor( nDataSlices / 2 )
+    halfDataSlices = floor( nDataSlices / 2 );
     subNoisyData = noisyData( 109-borderSize-halfDataSlices : ...
                               109+borderSize+halfDataSlices, :, : );
   else
     noisyData = loadMriImages( imgsDir );
-    subNoisyData = noisyData( 30-borderSize-halfDataSlices : ...
-                              30+borderSize+halfDataSlices, :, : );
+    halfDataSlices = floor( nDataSlices / 2 );
+    subNoisyData = noisyData( :, :, 30-borderSize-halfDataSlices : ...
+                              30+borderSize+halfDataSlices );
   end
   subNoisyData = subNoisyData / max( subNoisyData(:) );
 
   output = deNoiseMRI_eucNLMwModPriorPlus( subNoisyData, config );
   subDeNoised = output.deNoisedMRI;
-  
-  saveNoisyData = subNoisyData( borderSize+1:end-borderSize, :, : );
-  saveDeNoised = subDeNoised( borderSize+1:end-borderSize, :, : );
-  
+
+  if simulated
+    saveNoisyData = subNoisyData( borderSize+1:end-borderSize, :, : );
+    saveDeNoised = subDeNoised( borderSize+1:end-borderSize, :, : );
+  else
+    saveNoisyData = subNoisyData( :, :, borderSize+1:end-borderSize );
+    saveDeNoised = subDeNoised( :, :, borderSize+1:end-borderSize );
+  end
+
   saveName = [output.prefix,'deNoisedMRI.mat'];
   save(saveName, 'subNoisyData', 'subDeNoised' );
   

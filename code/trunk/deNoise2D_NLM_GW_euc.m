@@ -1,4 +1,4 @@
-function output = deNoise2D_NLM_GW_euclidian( noisyImg, config )
+function output = deNoise2D_NLM_GW_euc( noisyImg, config )
 %Uses gaussian weighted L2 norm
 
 
@@ -129,5 +129,5 @@ pause(0.01); % make sure it's displayed
 %% copy output images
 output = struct();
 output.deNoisedImg = deNoisedImg;
-output.prefix = 'NLM_';
+output.prefix = 'NLM_GW_euc_';
 output.borderSize = borderSize;
