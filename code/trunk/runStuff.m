@@ -72,9 +72,9 @@ function runStuff
         num2str(noiseSig),'_',imgFiles{imgIndx}] );
 
       nAlgorithms = numel(algorithms);
-      for algIndx=1:numel(algorithms)
+      for algIndx=1:nAlgorithms
         disp(['Working on algorithm index ', num2str(algIndx), ...
-          ' of ', nAlgorithms]);
+          ' of ', num2str(nAlgorithms)]);
 
         % TEST SUITE CONFIGURATION
         config.testSuiteAddNoise = true; %if false, will not add noise to the image. used when imputting images with noise already present.
