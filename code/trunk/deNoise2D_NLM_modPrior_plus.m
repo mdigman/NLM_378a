@@ -102,6 +102,8 @@ parfor j=borderSize:M-borderSize
         
         %Non-vectorized Bayesian Non-Local means weights
         localWeights = exp( -0.5*(dists/noiseSig - bayes_dist_offset).^2 );
+        localWeights(halfSearchSize+1,halfSearchSize+1) = ...
+          max( localWeights(:) );
         
         C = max( C, 0 );
         if color
@@ -158,5 +160,5 @@ pause(0.01); % make sure it's displayed
 %-- copy output images
 output = struct();
 output.deNoisedImg = deNoisedImg;
-output.prefix = 'NLM_';
+output.prefix = 'NLM_modPrior_plus_';
 output.borderSize = borderSize;

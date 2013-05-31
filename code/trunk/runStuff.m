@@ -34,7 +34,7 @@ function runStuff
   % NLM CONFIGURATION VALUES (NOMINAL)
   config = struct();
   config.kSize = 7;
-  config.searchSize = 21; %nominal value is 21
+  config.searchSize = 5; %nominal value is 21
   config.noiseMean = 0;
   config.color = color;
 
@@ -94,8 +94,9 @@ function runStuff
 % output.borderSize = 14;
         runtime = toc;
 
-        deNoisedFile = [outDir, fileSepChar, output.prefix, ...
-          'sig', num2str(noiseSig),'_', imgFiles{imgIndx}]
+        outFile = [ output.prefix, 'sig', num2str(noiseSig),'_', ...
+          imgFiles{imgIndx}]
+        deNoisedFile = [outDir, fileSepChar, outFile];
         imwrite( output.deNoisedImg, deNoisedFile );
 
         magDiffImg = abs( img - output.deNoisedImg );
@@ -108,9 +109,9 @@ function runStuff
         psnr = calculatePSNR( img, output.deNoisedImg, output.borderSize );
 
         algString = func2str(algorithms{algIndx});
-        imgString = ['=HYPERLINK("./',deNoisedFile,'")'];
-        fprintf( logID, '%s, %s, %f, %f, %f, %f, %f\n', algString, ...
-          imgFile, noiseSig, runtime, mse, paperMse, psnr);
+        imgString = ['=HYPERLINK(".',fileSepChar,outFile,'")'];
+        fprintf( logID, '%s,%s, %f, %f, %f, %f, %f\n', algString, ...
+          imgString, noiseSig, runtime, mse, paperMse, psnr);
 
         pause(1);  %Make sure all data gets written
         disp(['Completed Algorithm ', func2str(algorithmHandle)]);
