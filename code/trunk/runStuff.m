@@ -7,7 +7,7 @@ function runStuff
   color = false;
   imgFiles = { 'lena.png', 'boat.png', 'mandrill.png', 'barbara.png', ...
     'comedian.png' };
-  noises = [ 20, 8, 35, 25, 40 ];
+  noises = [ 8, 20, 25, 35, 40 ];
   noiseMean = 0;
 
   if isunix
@@ -34,9 +34,10 @@ function runStuff
   % NLM CONFIGURATION VALUES (NOMINAL)
   config = struct();
   config.kSize = 7;
-  config.searchSize = 5; %nominal value is 21
+  config.searchSize = 21; %nominal value is 21
   config.noiseMean = 0;
   config.color = color;
+  config.hEuclidian = 2;
 
   % Process Images
   nImgs = numel(imgFiles);
@@ -46,7 +47,9 @@ function runStuff
     imgFile = [ inDir, fileSepChar, imgFiles{imgIndx} ];
     img = imread( imgFile );
     img = double( img )/255.;
-    
+
+    if color && ndims(img)<3 continue; end
+
     nNoises = numel(noises);
     for noiseIndx=1:nNoises
       disp(['Working on noise index ', num2str(noiseIndx), ...
