@@ -71,10 +71,10 @@ function runStuff
       imwrite( noisyImg, [outDir,fileSepChar,'noisy_sig', ...
         num2str(noiseSig),'_',imgFiles{imgIndx}] );
 
+      nAlgorithms = numel(algorithms);
       for algIndx=1:numel(algorithms)
-
-        % FUNCTION HANDLE
-        algorithmHandle = @deNoise2D_NLM;
+        disp(['Working on algorithm index ', num2str(algIndx), ...
+          ' of ', nAlgorithms]);
 
         % TEST SUITE CONFIGURATION
         config.testSuiteAddNoise = true; %if false, will not add noise to the image. used when imputting images with noise already present.
@@ -84,21 +84,22 @@ function runStuff
         config.testSuiteUseImages = imgFiles{imgIndx}; %ex: testSuiteUseImages = {'lena.png', 'boat.png'} will only run on the two images, but empty {} runs all
         config.fileName = imgFile;
 
+        algorithmHandle = algorithms{algIndx};
         tic
         output = algorithmHandle(noisyImg, config);
-%   output = struct();
-%   output.deNoisedImg = zeros(sImg(1),sImg(2));
-%   output.deNoisedImg(1:100,1:100) = 1;
-%   output.prefix = 'test_';
-%   output.borderSize = 14;
+% output = struct();
+% output.deNoisedImg = zeros(sImg(1),sImg(2));
+% output.deNoisedImg(1:100,1:100) = 1;
+% output.prefix = 'test_';
+% output.borderSize = 14;
         runtime = toc;
 
         imwrite( output.deNoisedImg, [outDir, fileSepChar, ...
-        output.prefix, '_sig', num2str(noiseSig),'_', imgFiles{imgIndx}] );
+        output.prefix, 'sig', num2str(noiseSig),'_', imgFiles{imgIndx}] );
 
         magDiffImg = abs( img - output.deNoisedImg );
         imwrite( magDiffImg, [outDir, fileSepChar, output.prefix, ...
-          '_diff_sig',num2str(noiseSig),imgFiles{imgIndx}] );
+          'diff_sig',num2str(noiseSig),imgFiles{imgIndx}] );
 
         %calculate mse
         mse = calculateMSE( img, output.deNoisedImg, output.borderSize );
@@ -108,6 +109,9 @@ function runStuff
         algString = func2str(algorithms{algIndx});
         fprintf( logID, '%s, %s, %f, %f, %f, %f, %f\n', algString, ...
           imgFile, noiseSig, runtime, mse, paperMse, psnr);
+
+        pause(1);  %Make sure all data gets written
+        disp(['Completed Algorithm ', func2str(algorithmHandle
       end
     end
   end
