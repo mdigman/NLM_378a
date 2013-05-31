@@ -94,8 +94,9 @@ function runStuff
 % output.borderSize = 14;
         runtime = toc;
 
-        imwrite( output.deNoisedImg, [outDir, fileSepChar, ...
-        output.prefix, 'sig', num2str(noiseSig),'_', imgFiles{imgIndx}] );
+        deNoisedFile = [outDir, fileSepChar, output.prefix, ...
+          'sig', num2str(noiseSig),'_', imgFiles{imgIndx}]
+        imwrite( output.deNoisedImg, deNoisedFile );
 
         magDiffImg = abs( img - output.deNoisedImg );
         imwrite( magDiffImg, [outDir, fileSepChar, output.prefix, ...
@@ -107,6 +108,7 @@ function runStuff
         psnr = calculatePSNR( img, output.deNoisedImg, output.borderSize );
 
         algString = func2str(algorithms{algIndx});
+        imgString = ['=HYPERLINK("./',deNoisedFile,'")'];
         fprintf( logID, '%s, %s, %f, %f, %f, %f, %f\n', algString, ...
           imgFile, noiseSig, runtime, mse, paperMse, psnr);
 
