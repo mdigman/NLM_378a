@@ -83,7 +83,7 @@ c = 13.81/256;
 h = m*sigma+c;
 
 % Project all neighborhoods into the d-dimensional subspace
-all_nhoods = zeros(height-2*half_kernel,width-2*half_kernel,d);
+all_nhoods = zeros(height,width,d);
 for i = half_kernel+1:height-half_kernel
     if(mod(i,50) == 0); fprintf('Projecting Row %d...\n',i); end
     for j = half_kernel+1:width-half_kernel
