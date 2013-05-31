@@ -44,7 +44,7 @@ function runStuff
     disp(['Working on image ', num2str(imgIndx),' of ', num2str(nImgs)]);
 
     imgFile = [ inDir, fileSepChar, imgFiles{imgIndx} ];
-    img = imread( [inDir,fileSepChar,imgFile] );
+    img = imread( imgFile );
     img = double( img )/255.;
     
     nNoises = numel(noises);
