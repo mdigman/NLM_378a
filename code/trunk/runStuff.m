@@ -1,0 +1,116 @@
+
+function runStuff
+
+  algorithms = { @deNoise2D_NLM, @deNoise2D_NLM_modPrior, ...
+    @deNoise2D_NLM_GW, ...
+    @deNoise2D_NLM_GW_euclidian, @deNoise2D_NLM_GW_Euc_modPrior };
+  color = false;
+  imgFiles = { 'lena.png', 'boat.png', 'mandrill.png', 'barbara.png', ...
+    'comedian.png' };
+  noises = [ 20, 8, 35, 25, 40 ];
+  noiseMean = 0;
+
+  if isunix
+      fileSepChar = '/';
+      inDir = ['../../data/images'];
+      addpath('./matlab-ParforProgress2') % Add path for parallel progress tracking
+  else
+      fileSepChar = '\';
+      inDir = ['..\..\data\images'];
+      addpath('.\matlab-ParforProgress2') % Add path for parallel progress tracking
+  end
+
+  % Make output preparations
+  dateTime = datestr(now);
+  dateTime = strrep(dateTime, ':', '');
+  dateTime = strrep(dateTime, '-', '');
+  dateTime = strrep(dateTime, ' ', '_');
+  outDir = ['output_',dateTime];
+  mkdir(outDir);
+
+  logID = fopen([outDir,fileSepChar,'log.csv'], 'w');
+  fprintf( logID, 'function, filename, noiseSig, runtime (sec), MSE, Paper MSE, PSNR\n');
+
+  % NLM CONFIGURATION VALUES (NOMINAL)
+  config = struct();
+  config.kSize = 7;
+  config.searchSize = 21; %nominal value is 21
+  config.noiseMean = 0;
+  config.color = color;
+
+  % Process Images
+  nImgs = numel(imgFiles);
+  for imgIndx=1:nImgs
+    disp(['Working on image ', num2str(imgIndx),' of ', num2str(nImgs)]);
+
+    imgFile = [ inDir, fileSepChar, imgFiles{imgIndx} ];
+    img = imread( [inDir,fileSepChar,imgFile] );
+    img = double( img )/255.;
+    
+    nNoises = numel(noises);
+    for noiseIndx=1:nNoises
+      disp(['Working on noise index ', num2str(noiseIndx), ...
+        ' of ', num2str(nNoises)]);
+      noiseSig = noises(noiseIndx);
+
+      config.noiseSig = noiseSig/255; %standard deviation!
+      config.h = 12*config.noiseSig;
+
+      sImg = size(img);
+      noise = normrnd( noiseMean, config.noiseSig, sImg(1), sImg(2) );
+      if color
+        noisyImg = img;
+        noisyImg(:,:,1) = img(:,:,1) + noise;
+        noisyImg(:,:,2) = img(:,:,2) + noise;
+        noisyImg(:,:,3) = img(:,:,3) + noise;
+      else
+        if ndims( img ) > 2 img = rgb2gray( img ); end;
+        noisyImg = img + noise;
+      end
+      noisyImg = min( max( noisyImg, 0 ), 1 );
+      imwrite( noisyImg, [outDir,fileSepChar,'noisy_sig', ...
+        num2str(noiseSig),'_',imgFiles{imgIndx}] );
+
+      for algIndx=1:numel(algorithms)
+
+        % FUNCTION HANDLE
+        algorithmHandle = @deNoise2D_NLM;
+
+        % TEST SUITE CONFIGURATION
+        config.testSuiteAddNoise = true; %if false, will not add noise to the image. used when imputting images with noise already present.
+        config.testSuiteUseExternalImage = false; %if true, will not read in any images, but will process based on what you pass in
+        %config.testSuiteExternalImage = imread('../../data/images/lena.png');
+        %UseExternalImage flag overrides UseImages flag
+        config.testSuiteUseImages = imgFiles{imgIndx}; %ex: testSuiteUseImages = {'lena.png', 'boat.png'} will only run on the two images, but empty {} runs all
+        config.fileName = imgFile;
+
+        tic
+        output = algorithmHandle(noisyImg, config);
+%   output = struct();
+%   output.deNoisedImg = zeros(sImg(1),sImg(2));
+%   output.deNoisedImg(1:100,1:100) = 1;
+%   output.prefix = 'test_';
+%   output.borderSize = 14;
+        runtime = toc;
+
+        imwrite( output.deNoisedImg, [outDir, fileSepChar, ...
+        output.prefix, '_sig', num2str(noiseSig),'_', imgFiles{imgIndx}] );
+
+        magDiffImg = abs( img - output.deNoisedImg );
+        imwrite( magDiffImg, [outDir, fileSepChar, output.prefix, ...
+          '_diff_sig',num2str(noiseSig),imgFiles{imgIndx}] );
+
+        %calculate mse
+        mse = calculateMSE( img, output.deNoisedImg, output.borderSize );
+        paperMse = mse*255^2;
+        psnr = calculatePSNR( img, output.deNoisedImg, output.borderSize );
+
+        algString = func2str(algorithms{algIndx});
+        fprintf( logID, '%s, %s, %f, %f, %f, %f, %f\n', algString, ...
+          imgFile, noiseSig, runtime, mse, paperMse, psnr);
+      end
+    end
+  end
+
+  disp('Program complete');
+end
