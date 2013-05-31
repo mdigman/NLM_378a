@@ -111,7 +111,7 @@ function runStuff
           imgFile, noiseSig, runtime, mse, paperMse, psnr);
 
         pause(1);  %Make sure all data gets written
-        disp(['Completed Algorithm ', func2str(algorithmHandle
+        disp(['Completed Algorithm ', func2str(algorithmHandle)]);
       end
     end
   end
