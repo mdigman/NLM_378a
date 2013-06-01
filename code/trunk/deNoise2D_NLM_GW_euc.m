@@ -15,6 +15,9 @@ hSq = h*h;
 hEuclidian = config.hEuclidian;
 hSqEuclidian = hEuclidian^2;
 
+eucDistsSq =  ones(searchSize,1)*((1:searchSize) -ceil(searchSize/2));
+eucDistsSq = eucDistsSq.^2 + (eucDistsSq').^2;
+
 a = 0.5*(kSize-1)/2;
 
 if color
@@ -89,10 +92,8 @@ for j=borderSize:M-borderSize
                 weightedDistSq = distSq.*gaussKernel;
                 weightedDistSq = sum( weightedDistSq(:) );
                 
-                %Euclidian distance scale inspired by bilateral filter
-                weightedEuclidianDist = (j-vJ)^2 + (i-vI)^2;
-                
-                localWeights( jP+1, iP+1,: ) = exp( - weightedDistSq / hSq )*exp( - weightedEuclidianDist / hSqEuclidian );
+                localWeights( jP+1, iP+1,: ) = exp( - weightedDistSq / hSq ) * ...
+                  exp( - eucDistsSq / hSqEuclidian );
                 
             end
         end

@@ -82,7 +82,8 @@ for j=borderSize:M-borderSize
 
                 %Gaussian weighted L2 norm squared
                 distSq = ( kernel - v ) .* ( kernel - v );
-                dists( jP+1, iP+1, :) = sqrt(sum( distSq(:) )); %L2 distance
+                weightedDistSq = distSq.*gaussKernel;
+                dists( jP+1, iP+1, :) = sqrt(sum( weightedDistSq(:) )); %L2 distance
             end
         end
 

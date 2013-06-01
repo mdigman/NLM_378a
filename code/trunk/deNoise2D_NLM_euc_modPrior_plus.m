@@ -1,4 +1,4 @@
-function output = deNoise2D_NLM_GW_euc_modPrior_plus( noisyImg, config )
+function output = deNoise2D_NLM_euc_modPrior_plus( noisyImg, config )
 %-- Uses gaussian weighted L2 norm
 
 kSize = config.kSize;
@@ -98,8 +98,7 @@ parfor j=borderSize:M-borderSize
 
                 %Gaussian weighted L2 norm squared
                 distSq = ( kernel - v ) .* ( kernel - v );
-                weightedDistSq = distSq.*gaussKernel;
-                dists( jP+1, iP+1, :) = sqrt(sum( weightedDistSq(:) )); %L2 distance
+                dists( jP+1, iP+1, :) = sqrt(sum( distSq(:) )); %L2 distance
             end
         end
 
@@ -162,5 +161,5 @@ pause(0.01); % make sure it's displayed
 %-- copy output images
 output = struct();
 output.deNoisedImg = deNoisedImg;
-output.prefix = 'NLM_GW_euc_modPrior_plus_';
+output.prefix = 'NLM_euc_modPrior_plus_';
 output.borderSize = borderSize;

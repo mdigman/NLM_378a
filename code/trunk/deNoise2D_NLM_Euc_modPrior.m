@@ -1,22 +1,20 @@
-function output = deNoise2D_NLM_GW_euc_modPrior_plus( noisyImg, config )
+function output = deNoise2D_NLM_Euc_modPrior( noisyImg, config )
 %-- Uses gaussian weighted L2 norm
 
 kSize = config.kSize;
 searchSize = config.searchSize;
 h = config.h;
+hSq = h^2;
 noiseSig = config.noiseSig;
 color = config.color;
-
-hEuclidian = config.hEuclidian;
-hSqEuclidian = hEuclidian^2;
 
 lambda = 1;
 
 halfSearchSize = floor( searchSize/2 );
 halfKSize = floor( kSize/2 );
 
-bayes_dist_offset = sqrt(2*kSize^2 -1);
-
+hEuclidian = config.hEuclidian;
+hSqEuclidian = hEuclidian^2;
 eucDistsSq =  ones(searchSize,1)*((1:searchSize) -ceil(searchSize/2));
 eucDistsSq = eucDistsSq.^2 + (eucDistsSq').^2;
 
@@ -51,10 +49,11 @@ catch me % make sure "ParforProgressStarter2" didn't get moved to a different di
     end
 end
 
+
 %-- perform algorithm
 parfor j=borderSize:M-borderSize
     for i=borderSize:N-borderSize
-
+        
         halfCorrSearchSize = halfSearchSize+halfKSize;
         if color
             kernel = noisyImg( j-halfKSize:j+halfKSize, ...
@@ -79,15 +78,15 @@ parfor j=borderSize:M-borderSize
             C = normxcorr2(corrKer, corrSearch);
         end
         C = C( 2*halfKSize+1:end-2*halfKSize, 2*halfKSize+1:end-2*halfKSize );
-
-        dists = zeros( searchSize, searchSize);
+        
         for jP=0:searchSize-1
             for iP=0:searchSize-1
                 %disp(['(jP,iP): (',num2str(jP),',',num2str(iP),')']);
-
+                
                 vJ = j-halfSearchSize+jP;
                 vI = i-halfSearchSize+iP;
-
+                
+                
                 if color
                     v = noisyImg( vJ-halfKSize : vJ+halfKSize, ...
                         vI-halfKSize : vI+halfKSize, : );
@@ -95,20 +94,17 @@ parfor j=borderSize:M-borderSize
                     v = noisyImg( vJ-halfKSize : vJ+halfKSize, ...
                         vI-halfKSize : vI+halfKSize  );
                 end
-
+                
                 %Gaussian weighted L2 norm squared
                 distSq = ( kernel - v ) .* ( kernel - v );
-                weightedDistSq = distSq.*gaussKernel;
-                dists( jP+1, iP+1, :) = sqrt(sum( weightedDistSq(:) )); %L2 distance
+                localWeights( jP+1, iP+1 ,:) = sum( distSq(:) );
+                
             end
         end
-
-        %Non-vectorized Bayesian Non-Local means weights
-        localWeights = exp( -0.5*(dists/noiseSig - bayes_dist_offset).^2 ).*...
+        
+        localWeights = exp( -localWeights/hSq ).*...
           exp( - eucDistsSq / hSqEuclidian );
-        localWeights(halfSearchSize+1,halfSearchSize+1) = ...
-          max( localWeights(:) );
-
+        
         C = max( C, 0 );
         if color
             tmp = corrKer(:,:,1);
@@ -122,6 +118,7 @@ parfor j=borderSize:M-borderSize
             varKer = var( corrKer(:) );
         end
         prior = C + exp( -( lambda * varKer) ) * (1-C);
+        prior = prior / ( sum(sum(prior)));
         if color
             localWeights(:,:,1) = localWeights(:,:,1) .* prior;
             localWeights(:,:,2) = localWeights(:,:,1);
@@ -134,15 +131,16 @@ parfor j=borderSize:M-borderSize
         
         subImg = noisyImg( j-halfSearchSize : j+halfSearchSize, ...
             i-halfSearchSize : i+halfSearchSize, : );
-        
+
         deNoisedImg(j,i,:) = sum( sum( localWeights .* subImg ) ) ;
+
     end
-    
+
     %if mod(j,50)==0
     %  imshow( [noisyImg, deNoisedImg], [] );
     %  drawnow;
     %end
-    
+
     ppm.increment(j);
 end
 
@@ -162,5 +160,5 @@ pause(0.01); % make sure it's displayed
 %-- copy output images
 output = struct();
 output.deNoisedImg = deNoisedImg;
-output.prefix = 'NLM_GW_euc_modPrior_plus_';
+output.prefix = 'NLM_Euc_modPrior_';
 output.borderSize = borderSize;
