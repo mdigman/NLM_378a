@@ -92,11 +92,13 @@ for j=borderSize:M-borderSize
                 weightedDistSq = distSq.*gaussKernel;
                 weightedDistSq = sum( weightedDistSq(:) );
                 
-                localWeights( jP+1, iP+1,: ) = exp( - weightedDistSq / hSq ) * ...
-                  exp( - eucDistsSq / hSqEuclidian );
+                localWeights( jP+1, iP+1,: ) = exp( - weightedDistSq / hSq );
                 
             end
         end
+
+        localWeights = exp( -localWeights/hSq ) .* ...
+          exp( - eucDistsSq / hSqEuclidian );
         
         if color
             localWeights = localWeights / sum( sum( localWeights(:,:,1) ) );
