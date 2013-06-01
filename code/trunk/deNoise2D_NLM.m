@@ -101,12 +101,6 @@ function output = deNoise2D_NLM( noisyImg, config )
   catch me %#ok<NASGU>
   end
   
-
-  %% show output image
-  imshow( deNoisedImg, [] );
-  drawnow; % make sure it's displayed
-  pause(0.01); % make sure it's displayed
-  
   %% copy output images
   output = struct();
   output.deNoisedImg = deNoisedImg;

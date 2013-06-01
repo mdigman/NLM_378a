@@ -95,11 +95,6 @@ function runStuff
         algorithmHandle = algorithms{algIndx};
         tic
         output = algorithmHandle(noisyImg, config);
-% output = struct();
-% output.deNoisedImg = zeros(sImg(1),sImg(2));
-% output.deNoisedImg(1:100,1:100) = 1;
-% output.prefix = 'test_';
-% output.borderSize = 14;
         runtime = toc;
 
         outFile = [ output.prefix, 'sig', num2str(noiseSig),'_', ...
