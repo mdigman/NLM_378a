@@ -57,8 +57,15 @@ d = deNoise2D_PND_parallel(neighborhoods,eig_val);
 b = eig_vec(:,end:-1:end-d+1);
 
 % Estimate h
-m = 2.84;
-c = 13.81/256;
+if (d <= 8)
+    m = 2.84; c = 13.81/256;
+elseif (d <= 15)
+    m = 3.15; c = 22.55/256;
+elseif (d < 35)
+    m = 3.9; c = 29.31/256;
+else
+    m = 5.43; c = 29.17/256;
+end
 h = m*sigma+c;
 
 % Project all neighborhoods into the d-dimensional subspace
