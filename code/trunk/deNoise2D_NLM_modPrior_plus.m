@@ -45,19 +45,19 @@ catch me % make sure "ParforProgressStarter2" didn't get moved to a different di
     end
 end
 
-
 %-- perform algorithm
 parfor j=borderSize:M-borderSize
     for i=borderSize:N-borderSize
-        
+
+        halfCorrSearchSize = halfSearchSize+halfKSize;
         if color
             kernel = noisyImg( j-halfKSize:j+halfKSize, ...
                 i-halfKSize:i+halfKSize, :);
             corrKer = smoothedImg( j-halfKSize:j+halfKSize, ...
                 i-halfKSize:i+halfKSize, :);
-            corrSearch = smoothedImg( j-halfSearchSize:j+halfSearchSize, ...
-                i-halfSearchSize:i+halfSearchSize, : );
-            dists = zeros( searchSize, searchSize , 3);
+            corrSearch = smoothedImg( j-halfCorrSearchSize:j+halfCorrSearchSize, ...
+                i-halfCorrSearchSize:i+halfCorrSearchSize, : );
+            localWeights = zeros( searchSize, searchSize , 3);
             C1 = normxcorr2(corrKer(:,:,1), corrSearch(:,:,1) );
             C2 = normxcorr2(corrKer(:,:,2), corrSearch(:,:,2) );
             C3 = normxcorr2(corrKer(:,:,3), corrSearch(:,:,3) );
@@ -67,13 +67,14 @@ parfor j=borderSize:M-borderSize
                 i-halfKSize:i+halfKSize );
             corrKer = smoothedImg( j-halfKSize:j+halfKSize, ...
                 i-halfKSize:i+halfKSize);
-            corrSearch = smoothedImg( j-halfSearchSize:j+halfSearchSize, ...
-                i-halfSearchSize:i+halfSearchSize );
-            dists = zeros( searchSize, searchSize);
+            corrSearch = smoothedImg( j-halfCorrSearchSize:j+halfCorrSearchSize, ...
+                i-halfCorrSearchSize:i+halfCorrSearchSize );
+            localWeights = zeros( searchSize, searchSize );
             C = normxcorr2(corrKer, corrSearch);
         end
-        C = C( halfKSize+1:end-halfKSize, halfKSize+1:end-halfKSize );
-        
+        C = C( 2*halfKSize+1:end-2*halfKSize, 2*halfKSize+1:end-2*halfKSize );
+
+        dists = zeros( searchSize, searchSize);
         for jP=0:searchSize-1
             for iP=0:searchSize-1
                 %disp(['(jP,iP): (',num2str(jP),',',num2str(iP),')']);
@@ -91,7 +92,7 @@ parfor j=borderSize:M-borderSize
                 
                 %Gaussian weighted L2 norm squared
                 distSq = ( kernel - v ) .* ( kernel - v );
-                dists( jP+1, iP+1 ,:) = sqrt(sum( distSq(:) )); %L2 distance
+                dists( jP+1, iP+1 ) = sqrt(sum( distSq(:) )); %L2 distance
                 
                 %weightedDistSq = distSq.*gaussKernel;
                 %weightedDistSq = sum( weightedDistSq(:) );

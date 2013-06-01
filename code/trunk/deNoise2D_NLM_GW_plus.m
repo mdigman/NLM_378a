@@ -1,4 +1,4 @@
-function output = deNoise2D_NLM_GW_modPrior_plus( noisyImg, config )
+function output = deNoise2D_NLM_GW_plus( noisyImg, config )
 %-- Uses gaussian weighted L2 norm
 
 kSize = config.kSize;
@@ -24,7 +24,6 @@ else
     gaussKernel = fspecial('gaussian', kSize, a)*kSize^2;
 end
 
-smoothedImg = imfilter(noisyImg, gaussKernel, 'replicate');
 deNoisedImg = noisyImg;
 
 borderSize = halfKSize+halfSearchSize+1;
@@ -50,39 +49,22 @@ end
 parfor j=borderSize:M-borderSize
     for i=borderSize:N-borderSize
         
-        halfCorrSearchSize = halfSearchSize+halfKSize;
         if color
             kernel = noisyImg( j-halfKSize:j+halfKSize, ...
                 i-halfKSize:i+halfKSize, :);
-            corrKer = smoothedImg( j-halfKSize:j+halfKSize, ...
-                i-halfKSize:i+halfKSize, :);
-            corrSearch = smoothedImg( j-halfCorrSearchSize:j+halfCorrSearchSize, ...
-                i-halfCorrSearchSize:i+halfCorrSearchSize, : );
-            localWeights = zeros( searchSize, searchSize , 3);
-            C1 = normxcorr2(corrKer(:,:,1), corrSearch(:,:,1) );
-            C2 = normxcorr2(corrKer(:,:,2), corrSearch(:,:,2) );
-            C3 = normxcorr2(corrKer(:,:,3), corrSearch(:,:,3) );
-            C = ( C1 + C2 + C3 ) / 3;
+            dists = zeros( searchSize, searchSize , 3);
         else
             kernel = noisyImg( j-halfKSize:j+halfKSize, ...
                 i-halfKSize:i+halfKSize );
-            corrKer = smoothedImg( j-halfKSize:j+halfKSize, ...
-                i-halfKSize:i+halfKSize);
-            corrSearch = smoothedImg( j-halfCorrSearchSize:j+halfCorrSearchSize, ...
-                i-halfCorrSearchSize:i+halfCorrSearchSize );
-            localWeights = zeros( searchSize, searchSize );
-            C = normxcorr2(corrKer, corrSearch);
+            dists = zeros( searchSize, searchSize);
         end
-        C = C( 2*halfKSize+1:end-2*halfKSize, 2*halfKSize+1:end-2*halfKSize );
         
-        dists = zeros( searchSize, searchSize);
         for jP=0:searchSize-1
             for iP=0:searchSize-1
                 %disp(['(jP,iP): (',num2str(jP),',',num2str(iP),')']);
                 
                 vJ = j-halfSearchSize+jP;
                 vI = i-halfSearchSize+iP;
-                
                 
                 if color
                     v = noisyImg( vJ-halfKSize : vJ+halfKSize, ...
@@ -104,30 +86,8 @@ parfor j=borderSize:M-borderSize
         localWeights = exp( -0.5*(dists/noiseSig - bayes_dist_offset).^2 );
         localWeights(halfSearchSize+1,halfSearchSize+1) = ...
           max( localWeights(:) );
-        
-        C = max( C, 0 );
-        if color
-            tmp = corrKer(:,:,1);
-            varKer1 = var( tmp(:) );
-            tmp = corrKer(:,:,2);
-            varKer2 = var( tmp(:) );
-            tmp = corrKer(:,:,3);
-            varKer3 = var( tmp(:) );
-            varKer = ( varKer1 + varKer2 + varKer3 ) / 3;
-        else
-            varKer = var( corrKer(:) );
-        end
-        prior = C + exp( -( lambda * varKer) ) * (1-C);
-        prior = prior / ( sum(sum(prior)));
-        if color
-            localWeights(:,:,1) = localWeights(:,:,1) .* prior;
-            localWeights(:,:,2) = localWeights(:,:,1);
-            localWeights(:,:,3) = localWeights(:,:,1);
-            localWeights = localWeights / sum( sum( localWeights(:,:,1) ) );
-        else
-            localWeights = localWeights .* prior;
-            localWeights = localWeights / sum( localWeights(:) );
-        end
+
+        localWeights = localWeights / sum( localWeights(:) );
         
         subImg = noisyImg( j-halfSearchSize : j+halfSearchSize, ...
             i-halfSearchSize : i+halfSearchSize, : );
@@ -160,5 +120,5 @@ pause(0.01); % make sure it's displayed
 %-- copy output images
 output = struct();
 output.deNoisedImg = deNoisedImg;
-output.prefix = 'NLM_';
+output.prefix = 'NLM_GW_plus_';
 output.borderSize = borderSize;

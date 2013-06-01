@@ -1,4 +1,4 @@
-function output = deNoise2D_NLM_euc_modPrior_plus( noisyImg, config )
+function output = deNoise2D_NLM_GW_euc_modPrior_plus( noisyImg, config )
 %-- Uses gaussian weighted L2 norm
 
 kSize = config.kSize;
@@ -51,20 +51,19 @@ catch me % make sure "ParforProgressStarter2" didn't get moved to a different di
     end
 end
 
-dists = zeros( searchSize, searchSize);
-
 %-- perform algorithm
-%parfor j=borderSize:M-borderSize
-for j=borderSize:M-borderSize
+parfor j=borderSize:M-borderSize
     for i=borderSize:N-borderSize
-        
+
+        halfCorrSearchSize = halfSearchSize+halfKSize;
         if color
             kernel = noisyImg( j-halfKSize:j+halfKSize, ...
                 i-halfKSize:i+halfKSize, :);
             corrKer = smoothedImg( j-halfKSize:j+halfKSize, ...
                 i-halfKSize:i+halfKSize, :);
-            corrSearch = smoothedImg( j-halfSearchSize:j+halfSearchSize, ...
-                i-halfSearchSize:i+halfSearchSize, : );
+            corrSearch = smoothedImg( j-halfCorrSearchSize:j+halfCorrSearchSize, ...
+                i-halfCorrSearchSize:i+halfCorrSearchSize, : );
+            localWeights = zeros( searchSize, searchSize , 3);
             C1 = normxcorr2(corrKer(:,:,1), corrSearch(:,:,1) );
             C2 = normxcorr2(corrKer(:,:,2), corrSearch(:,:,2) );
             C3 = normxcorr2(corrKer(:,:,3), corrSearch(:,:,3) );
@@ -74,12 +73,14 @@ for j=borderSize:M-borderSize
                 i-halfKSize:i+halfKSize );
             corrKer = smoothedImg( j-halfKSize:j+halfKSize, ...
                 i-halfKSize:i+halfKSize);
-            corrSearch = smoothedImg( j-halfSearchSize:j+halfSearchSize, ...
-                i-halfSearchSize:i+halfSearchSize );
+            corrSearch = smoothedImg( j-halfCorrSearchSize:j+halfCorrSearchSize, ...
+                i-halfCorrSearchSize:i+halfCorrSearchSize );
+            localWeights = zeros( searchSize, searchSize );
             C = normxcorr2(corrKer, corrSearch);
         end
-        C = C( halfKSize+1:end-halfKSize, halfKSize+1:end-halfKSize );
-        
+        C = C( 2*halfKSize+1:end-2*halfKSize, 2*halfKSize+1:end-2*halfKSize );
+
+        dists = zeros( searchSize, searchSize);
         for jP=0:searchSize-1
             for iP=0:searchSize-1
                 %disp(['(jP,iP): (',num2str(jP),',',num2str(iP),')']);
@@ -104,6 +105,8 @@ for j=borderSize:M-borderSize
         %Non-vectorized Bayesian Non-Local means weights
         localWeights = exp( -0.5*(dists/noiseSig - bayes_dist_offset).^2 ).*...
           exp( - eucDistsSq / hSqEuclidian );
+        localWeights(halfSearchSize+1,halfSearchSize+1) = ...
+          max( localWeights(:) );
 
         C = max( C, 0 );
         if color
@@ -158,5 +161,5 @@ pause(0.01); % make sure it's displayed
 %-- copy output images
 output = struct();
 output.deNoisedImg = deNoisedImg;
-output.prefix = 'NLM_euc_modPrior_plus_';
+output.prefix = 'NLM_GW_euc_modPrior_plus_';
 output.borderSize = borderSize;
