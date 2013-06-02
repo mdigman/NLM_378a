@@ -70,8 +70,12 @@ if testSuiteUseExternalImage
     imwrite(testSuiteExternalImage, [outDir,fileSepChar,'external_image.png']); 
 else
     callSeq = dbstack();
-    nCallSeq = numel( callSeq );
-    runFile = callSeq( nCallSeq ).file;
+    % Note: originally, the runFile was the last file in the stack.
+    % However, we want to save the file that is calling the test_function.
+    % This is always the second file in the stack. This change fixes a
+    % problem that when using run_condor(@run_XY), the run_condor
+    % script is saved instead of the run_XY file.
+    runFile = callSeq( 2 ).file;
     copyfile( runFile, [outDir,fileSepChar,runFile] );    
 end
 
