@@ -4,5 +4,5 @@ function run_condor(run_script)
   
   run_script();
   
-  matlabpool close manycores;
+  matlabpool close;
 end

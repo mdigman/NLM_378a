@@ -1,0 +1,8 @@
+executable = /opt/matlabR2012a/bin/matlab
+arguments = -nodesktop -nosplash -r run_condor(@run_deNoiseAudio_NLM_euc_modPrior_plus)
+universe = vanilla
+output = condor/run_deNoiseAudio_NLM_euc_modPrior_plus.output.$(Process)
+error = condor/run_deNoiseAudio_NLM_euc_modPrior_plus.error.$(Process)
+log = condor/run_deNoiseAudio_NLM_euc_modPrior_plus.log.$(Process)
+notify_user = thomaswa@stanford.edu
+queue

@@ -1,11 +1,11 @@
-function run_deNoiseAudio_NLM_GW
+function run_deNoiseAudio_NLM_GW_modPrior
   % FUNCTION HANDLE
-  algorithmHandle = @deNoiseAudio_NLM_GW;
+  algorithmHandle = @deNoiseAudio_NLM_GW_modPrior;
 
   % NLM CONFIGURATION VALUES (NOMINAL)
   config = struct();
-  config.kSize = 301;
-  config.searchSize = 3001; %nominal value is 21
+  config.kSize = 11;
+  config.searchSize = 101; %nominal value is 21
   config.noiseSig = 0.05;
   config.noiseMean = 0;
 
@@ -14,7 +14,7 @@ function run_deNoiseAudio_NLM_GW
   config.testSuiteUseAudioFiles = {'fluteShort_mono_snippet.wav'};
 
   % GW configuration values
-  config.h = 12*config.noiseSig;
+  config.h = 150;%12*config.noiseSig;
   
   test_suite(algorithmHandle, config);
 end

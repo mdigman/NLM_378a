@@ -4,3 +4,5 @@
 output_*
 output/*
 condor/*
+*~
+.spmd
