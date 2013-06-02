@@ -1,7 +1,9 @@
 function runStuff_condor_niko
 
-manycores = parallel.importProfile('matlab/manycores.settings');
+  manycores = parallel.importProfile('matlab/manycores.settings');
   matlabpool open manycores 12;
+  
+  notify_user = nwest2@stanford.edu;
 
   algorithms = { @deNoise2D_NLM, @deNoise2D_NLM_modPrior, ...
     @deNoise2D_NLM_plus, @deNoise2D_NLM_modPrior_plus, ...
