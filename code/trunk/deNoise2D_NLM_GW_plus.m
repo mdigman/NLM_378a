@@ -1,5 +1,4 @@
 function output = deNoise2D_NLM_GW_plus( noisyImg, config )
-%-- Uses gaussian weighted L2 norm
 
 kSize = config.kSize;
 searchSize = config.searchSize;

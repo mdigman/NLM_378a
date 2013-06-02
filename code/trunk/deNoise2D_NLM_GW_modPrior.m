@@ -5,7 +5,6 @@ kSize = config.kSize;
 searchSize = config.searchSize;
 h = config.h;
 hSq = h^2;
-noiseSig = config.noiseSig;
 color = config.color;
 
 lambda = 1;

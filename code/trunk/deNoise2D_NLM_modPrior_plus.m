@@ -57,7 +57,6 @@ parfor j=borderSize:M-borderSize
                 i-halfKSize:i+halfKSize, :);
             corrSearch = smoothedImg( j-halfCorrSearchSize:j+halfCorrSearchSize, ...
                 i-halfCorrSearchSize:i+halfCorrSearchSize, : );
-            localWeights = zeros( searchSize, searchSize , 3);
             C1 = normxcorr2(corrKer(:,:,1), corrSearch(:,:,1) );
             C2 = normxcorr2(corrKer(:,:,2), corrSearch(:,:,2) );
             C3 = normxcorr2(corrKer(:,:,3), corrSearch(:,:,3) );
@@ -69,7 +68,6 @@ parfor j=borderSize:M-borderSize
                 i-halfKSize:i+halfKSize);
             corrSearch = smoothedImg( j-halfCorrSearchSize:j+halfCorrSearchSize, ...
                 i-halfCorrSearchSize:i+halfCorrSearchSize );
-            localWeights = zeros( searchSize, searchSize );
             C = normxcorr2(corrKer, corrSearch);
         end
         C = C( 2*halfKSize+1:end-2*halfKSize, 2*halfKSize+1:end-2*halfKSize );
@@ -93,11 +91,6 @@ parfor j=borderSize:M-borderSize
                 %Gaussian weighted L2 norm squared
                 distSq = ( kernel - v ) .* ( kernel - v );
                 dists( jP+1, iP+1 ) = sqrt(sum( distSq(:) )); %L2 distance
-                
-                %weightedDistSq = distSq.*gaussKernel;
-                %weightedDistSq = sum( weightedDistSq(:) );
-                %localWeights( jP+1, iP+1,: ) = exp( - weightedDistSq / hSq );
-                
             end
         end
         
@@ -119,17 +112,13 @@ parfor j=borderSize:M-borderSize
             varKer = var( corrKer(:) );
         end
         prior = C + exp( -( lambda * varKer) ) * (1-C);
-        prior = prior / ( sum(sum(prior)));
+        localWeights = localWeights .* prior;
+
+        localWeights = localWeights / sum( localWeights(:) );
         if color
-            localWeights(:,:,1) = localWeights(:,:,1) .* prior;
-            localWeights(:,:,2) = localWeights(:,:,1);
-            localWeights(:,:,3) = localWeights(:,:,1);
-            localWeights = localWeights / sum( sum( localWeights(:,:,1) ) );
-        else
-            localWeights = localWeights .* prior;
-            localWeights = localWeights / sum( localWeights(:) );
+          localWeights = repmat( localWeights, [1 1 3] );
         end
-        
+
         subImg = noisyImg( j-halfSearchSize : j+halfSearchSize, ...
             i-halfSearchSize : i+halfSearchSize, : );
         

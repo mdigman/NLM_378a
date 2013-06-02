@@ -13,14 +13,12 @@ halfKSize = floor( kSize/2 );
 hSq = h*h;
 
 a = 0.5*(kSize-1)/2;
-
 if color
     [M N C] = size( noisyImg );
     gaussKernel = fspecial('gaussian', kSize, a)*kSize^2;
     gaussKernel = repmat(gaussKernel, [1 1 3]);
 else
     [M N] = size( noisyImg );
-    %Define the gaussian kernel for the gaussian weighted L2-norm
     gaussKernel = fspecial('gaussian', kSize, a)*kSize^2;
 end
 
@@ -52,26 +50,22 @@ parfor j=borderSize:M-borderSize
         % improve performance. Instead, one would have to use spmd to do
         % such things. However, most of the time is spent in the two inner
         % loops anyway
-        
-        
+
         if color
             kernel = noisyImg( j-halfKSize:j+halfKSize, ...
                 i-halfKSize:i+halfKSize, :);
-            localWeights = zeros( searchSize, searchSize , 3);
         else
             kernel = noisyImg( j-halfKSize:j+halfKSize, ...
                 i-halfKSize:i+halfKSize );
-            localWeights = zeros( searchSize, searchSize );
         end
-        
-        
+        localWeights = zeros( searchSize, searchSize );
+
         for jP=0:searchSize-1
             for iP=0:searchSize-1
                 %disp(['(jP,iP): (',num2str(jP),',',num2str(iP),')']);
                 
                 vJ = j-halfSearchSize+jP;
                 vI = i-halfSearchSize+iP;
-                
                 
                 if color
                     v = noisyImg( vJ-halfKSize : vJ+halfKSize, ...
@@ -81,20 +75,17 @@ parfor j=borderSize:M-borderSize
                         vI-halfKSize : vI+halfKSize  );
                 end
                 
-                %Gaussian weighted L2 norm squared
                 distSq = ( kernel - v ) .* ( kernel - v );
                 weightedDistSq = distSq.*gaussKernel;
                 weightedDistSq = sum( weightedDistSq(:) );
                 
                 localWeights( jP+1, iP+1,: ) = exp( - weightedDistSq / hSq );
-                
             end
         end
-        
+
+        localWeights = localWeights / sum( localWeights(:) );
         if color
-            localWeights = localWeights / sum( sum( localWeights(:,:,1) ) );
-        else
-            localWeights = localWeights / sum( localWeights(:) );
+            localWeights = repmat( localWeights, [1 1 3] );
         end
         
         subImg = noisyImg( j-halfSearchSize : j+halfSearchSize, ...

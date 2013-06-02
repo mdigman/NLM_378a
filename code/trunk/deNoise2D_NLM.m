@@ -20,7 +20,7 @@ function output = deNoise2D_NLM( noisyImg, config )
 
   borderSize = halfKSize+halfSearchSize+1;
   
-  %% initialize progress tracker
+  %-- initialize progress tracker
   try % Initialization
     ppm = ParforProgressStarter2(config.fileName, M-2*borderSize, 0.1);
   catch me % make sure "ParforProgressStarter2" didn't get moved to a different directory
@@ -37,7 +37,7 @@ function output = deNoise2D_NLM( noisyImg, config )
   end
 
 
-  %% perform algorithm
+  %-- perform algorithm
   parfor j=borderSize:M-borderSize
     for i=borderSize:N-borderSize
       % As far as I (Thomas) know, noisyImg can't be easily sliced to
@@ -48,14 +48,11 @@ function output = deNoise2D_NLM( noisyImg, config )
       if color
         kernel = noisyImg( j-halfKSize:j+halfKSize, ...
           i-halfKSize:i+halfKSize, :);
-        localWeights = zeros( searchSize, searchSize , 3);
       else
         kernel = noisyImg( j-halfKSize:j+halfKSize, ...
           i-halfKSize:i+halfKSize );
-        localWeights = zeros( searchSize, searchSize );
       end
-      
-      
+      localWeights = zeros( searchSize, searchSize );
 
       for jP=0:searchSize-1
         for iP=0:searchSize-1
@@ -74,19 +71,18 @@ function output = deNoise2D_NLM( noisyImg, config )
           distSq = ( kernel - v ) .* ( kernel - v );
           distSq = sum( distSq(:) ); %L2 norm squared
 
-          localWeights( jP+1, iP+1 ,:) = exp( - distSq / hSq );
+          localWeights( jP+1, iP+1 ) = exp( - distSq / hSq );
         end
       end
 
+      localWeights = localWeights / sum( localWeights(:) );
       if color
-        localWeights = localWeights / sum( sum( localWeights(:,:,1) ) ); 
-      else
-        localWeights = localWeights / sum( localWeights(:) );
+        localWeights = repmat( localWeights, [1 1 3] );
       end
       
       subImg = noisyImg( j-halfSearchSize : j+halfSearchSize, ...
           i-halfSearchSize : i+halfSearchSize, : );
-      
+
       deNoisedImg(j,i,:) = sum( sum( localWeights .* subImg ) ) ;
       
     end
@@ -95,13 +91,13 @@ function output = deNoise2D_NLM( noisyImg, config )
   end
   
   
-  %% clean up parallel
+  %-- clean up parallel
   try % use try / catch here, since delete(struct) will raise an error.
       delete(ppm);
   catch me %#ok<NASGU>
   end
   
-  %% copy output images
+  %-- copy output images
   output = struct();
   output.deNoisedImg = deNoisedImg;
   output.prefix = 'NLM_';

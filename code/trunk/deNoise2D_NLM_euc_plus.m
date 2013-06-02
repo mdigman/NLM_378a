@@ -18,7 +18,6 @@ bayes_dist_offset = sqrt(2*kSize^2 -1);
 eucDistsSq =  ones(searchSize,1)*((1:searchSize) -ceil(searchSize/2));
 eucDistsSq = eucDistsSq.^2 + (eucDistsSq').^2;
 
-
 if color
     [M N C] = size( noisyImg );
 else
@@ -53,14 +52,11 @@ parfor j=borderSize:M-borderSize
         if color
             kernel = noisyImg( j-halfKSize:j+halfKSize, ...
                 i-halfKSize:i+halfKSize, :);
-            %localWeights = zeros( searchSize, searchSize , 3);
-            dists = zeros( searchSize, searchSize , 3);
         else
             kernel = noisyImg( j-halfKSize:j+halfKSize, ...
                 i-halfKSize:i+halfKSize );
-            %localWeights = zeros( searchSize, searchSize );
-            dists = zeros( searchSize, searchSize);
         end
+        dists = zeros( searchSize, searchSize);
         
         for jP=0:searchSize-1
             for iP=0:searchSize-1
@@ -88,20 +84,17 @@ parfor j=borderSize:M-borderSize
         localWeights = exp( -0.5*(dists/noiseSig - bayes_dist_offset).^2 ).*...
           exp( - eucDistsSq / hSqEuclidian );
         
+        localWeights = localWeights / sum( localWeights(:) );
         if color
-            localWeights = localWeights / sum( sum( localWeights(:,:,1) ) );
-        else
-            localWeights = localWeights / sum( localWeights(:) );
+          localWeights = repmat( localWeights, [1 1 3] );
         end
-        
+
         subImg = noisyImg( j-halfSearchSize : j+halfSearchSize, ...
             i-halfSearchSize : i+halfSearchSize, : );
         
-        deNoisedImg(j,i,:) = sum( sum( localWeights .* subImg ) ) ;
-        
+        deNoisedImg(j,i,:) = sum( sum( localWeights .* subImg ) ) ;        
     end
 
-    
     ppm.increment(j);
 end
 

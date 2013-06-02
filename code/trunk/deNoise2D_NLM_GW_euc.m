@@ -54,30 +54,23 @@ end
 %% perform algorithm
 for j=borderSize:M-borderSize
     for i=borderSize:N-borderSize
-        % As far as I (Thomas) know, noisyImg can't be easily sliced to
-        % improve performance. Instead, one would have to use spmd to do
-        % such things. However, most of the time is spent in the two inner
-        % loops anyway
-        
         
         if color
             kernel = noisyImg( j-halfKSize:j+halfKSize, ...
                 i-halfKSize:i+halfKSize, :);
-            localWeights = zeros( searchSize, searchSize , 3);
         else
             kernel = noisyImg( j-halfKSize:j+halfKSize, ...
                 i-halfKSize:i+halfKSize );
-            localWeights = zeros( searchSize, searchSize );
         end
-        
-        
+
+        localWeights = zeros( searchSize, searchSize );
+
         for jP=0:searchSize-1
             for iP=0:searchSize-1
                 %disp(['(jP,iP): (',num2str(jP),',',num2str(iP),')']);
                 
                 vJ = j-halfSearchSize+jP;
                 vI = i-halfSearchSize+iP;
-                
                 
                 if color
                     v = noisyImg( vJ-halfKSize : vJ+halfKSize, ...
@@ -92,18 +85,17 @@ for j=borderSize:M-borderSize
                 weightedDistSq = distSq.*gaussKernel;
                 weightedDistSq = sum( weightedDistSq(:) );
                 
-                localWeights( jP+1, iP+1,: ) = exp( - weightedDistSq / hSq );
+                localWeights( jP+1, iP+1 ) = exp( - weightedDistSq / hSq );
                 
             end
         end
 
         localWeights = exp( -localWeights/hSq ) .* ...
           exp( - eucDistsSq / hSqEuclidian );
-        
+
+        localWeights = localWeights / sum( localWeights(:) );
         if color
-            localWeights = localWeights / sum( sum( localWeights(:,:,1) ) );
-        else
-            localWeights = localWeights / sum( localWeights(:) );
+          localWeights = repmat( localWeights, [1 1 3] );
         end
         
         subImg = noisyImg( j-halfSearchSize : j+halfSearchSize, ...

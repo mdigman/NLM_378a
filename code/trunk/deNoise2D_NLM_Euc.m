@@ -18,16 +18,11 @@ hSqEuclidian = hEuclidian^2;
 eucDistsSq =  ones(searchSize,1)*((1:searchSize) -ceil(searchSize/2));
 eucDistsSq = eucDistsSq.^2 + (eucDistsSq').^2;
 
-a = 0.5*(kSize-1)/2;
 if color
     [M N C] = size( noisyImg );
-    gaussKernel = fspecial('gaussian', kSize, a)*kSize^2;
-    gaussKernel = repmat(gaussKernel, [1 1 3]);
 else
     [M N] = size( noisyImg );
-    gaussKernel = fspecial('gaussian', kSize, a)*kSize^2;
 end
-
 deNoisedImg = noisyImg;
 
 borderSize = halfKSize+halfSearchSize+1;
@@ -56,12 +51,12 @@ parfor j=borderSize:M-borderSize
         if color
             kernel = noisyImg( j-halfKSize:j+halfKSize, ...
                 i-halfKSize:i+halfKSize, :);
-            localWeights = zeros( searchSize, searchSize , 3);
         else
             kernel = noisyImg( j-halfKSize:j+halfKSize, ...
-                i-halfKSize:i+halfKSize );
-            localWeights = zeros( searchSize, searchSize );
+                i-halfKSize:i+halfKSize );            
         end
+
+        localWeights = zeros( searchSize, searchSize );
         
         for jP=0:searchSize-1
             for iP=0:searchSize-1
@@ -70,7 +65,6 @@ parfor j=borderSize:M-borderSize
                 vJ = j-halfSearchSize+jP;
                 vI = i-halfSearchSize+iP;
                 
-                
                 if color
                     v = noisyImg( vJ-halfKSize : vJ+halfKSize, ...
                         vI-halfKSize : vI+halfKSize, : );
@@ -78,18 +72,20 @@ parfor j=borderSize:M-borderSize
                     v = noisyImg( vJ-halfKSize : vJ+halfKSize, ...
                         vI-halfKSize : vI+halfKSize  );
                 end
-                
-                %Gaussian weighted L2 norm squared
+
                 distSq = ( kernel - v ) .* ( kernel - v );
-                localWeights( jP+1, iP+1 ,:) = sum( distSq(:) );
+                localWeights( jP+1, iP+1 ) = sum( distSq(:) );
                 
             end
         end
-        
+
         localWeights = exp( -localWeights/hSq ).*...
           exp( - eucDistsSq / hSqEuclidian );
 
         localWeights = localWeights / sum( localWeights(:) );
+        if color
+          localWeights = repmat( localWeights, [1 1 3] );
+        end
 
         subImg = noisyImg( j-halfSearchSize : j+halfSearchSize, ...
             i-halfSearchSize : i+halfSearchSize, : );

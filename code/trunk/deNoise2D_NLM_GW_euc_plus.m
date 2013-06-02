@@ -83,7 +83,7 @@ for j=borderSize:M-borderSize
                 %Gaussian weighted L2 norm squared
                 distSq = ( kernel - v ) .* ( kernel - v );
                 weightedDistSq = distSq.*gaussKernel;
-                dists( jP+1, iP+1, :) = sqrt(sum( weightedDistSq(:) )); %L2 distance
+                dists( jP+1, iP+1 ) = sqrt(sum( weightedDistSq(:) )); %L2 distance
             end
         end
 
@@ -94,6 +94,9 @@ for j=borderSize:M-borderSize
           max( localWeights(:) );
 
         localWeights = localWeights / sum( localWeights(:) );
+        if color
+          localWeights = repmat( localWeights, [1 1 3] );
+        end
 
         subImg = noisyImg( j-halfSearchSize : j+halfSearchSize, ...
             i-halfSearchSize : i+halfSearchSize, : );

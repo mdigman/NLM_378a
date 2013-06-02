@@ -49,16 +49,11 @@ function output = deNoise2D_NLM_plus( noisyImg, config )
       if color
         kernel = noisyImg( j-halfKSize:j+halfKSize, ...
           i-halfKSize:i+halfKSize, :);
-        %localWeights = zeros( searchSize, searchSize , 3);
-        dists = zeros( searchSize, searchSize , 3);
       else
         kernel = noisyImg( j-halfKSize:j+halfKSize, ...
           i-halfKSize:i+halfKSize );
-        %localWeights = zeros( searchSize, searchSize );
-        dists = zeros( searchSize, searchSize);
       end
-      
-      
+      dists = zeros( searchSize, searchSize);
 
       for jP=0:searchSize-1
         for iP=0:searchSize-1
@@ -75,11 +70,7 @@ function output = deNoise2D_NLM_plus( noisyImg, config )
               vI-halfKSize : vI+halfKSize  );
           end
           distSq = ( kernel - v ) .* ( kernel - v );
-          dists( jP+1, iP+1 ,:) = sqrt(sum( distSq(:) )); %L2 distance
-
-          
-          %weight = exp( -0.5*(dist/noiseSig - bayes_dist_offset)^2 );
-          %localWeights( jP+1, iP+1 ,:) = weight;
+          dists( jP+1, iP+1 ) = sqrt(sum( distSq(:) )); %L2 distance
 
         end
       end
@@ -89,10 +80,9 @@ function output = deNoise2D_NLM_plus( noisyImg, config )
       localWeights(halfSearchSize+1,halfSearchSize+1) = ...
         max( localWeights(:) );
       
+      localWeights = localWeights / sum( localWeights(:) );
       if color
-        localWeights = localWeights / sum( sum( localWeights(:,:,1) ) ); 
-      else
-        localWeights = localWeights / sum( localWeights(:) );
+        localWeights = repmat( localWeights, [1 1 3] );
       end
       
       subImg = noisyImg( j-halfSearchSize : j+halfSearchSize, ...
