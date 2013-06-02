@@ -2,7 +2,7 @@
 function runStuff_PND(noise_num)
 
   algorithms = { @deNoise2D_PND, @deNoise2D_PND_modPrior, ...
-    @deNoise2D_NLM_modPrior2};
+    @deNoise2D_PND_modPrior2};
   imgFiles = { 'lena.png', 'boat.png', 'mandrill.png', 'barbara.png', ...
     'comedian.png' };
   color = false;
