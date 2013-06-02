@@ -121,9 +121,9 @@ end
 % disp(sprintf('MSE = %d',MSE))
 
 %-- show output image
-imshow( deNoisedImg, [] );
-drawnow; % make sure it's displayed
-pause(0.01); % make sure it's displayed
+% imshow( deNoisedImg, [] );
+% drawnow; % make sure it's displayed
+% pause(0.01); % make sure it's displayed
 
 
 borderSize = half_kernel+half_window+1;

@@ -1,5 +1,5 @@
 
-function runStuff_PND
+function runStuff_PND(noise_num)
 
   algorithms = { @deNoise2D_PND, @deNoise2D_PND_modPrior, ...
     @deNoise2D_NLM_modPrior2};
@@ -24,7 +24,7 @@ function runStuff_PND
   dateTime = strrep(dateTime, ':', '');
   dateTime = strrep(dateTime, '-', '');
   dateTime = strrep(dateTime, ' ', '_');
-  outDir = ['output_',dateTime];
+  outDir = ['output_',num2str(noises(noise_num)),'_',dateTime];
   mkdir(outDir);
 
   logID = fopen([outDir,fileSepChar,'log.csv'], 'w');
@@ -49,11 +49,11 @@ function runStuff_PND
 
     if color && ndims(img)<3 continue; end
 
-    nNoises = numel(noises);
-    for noiseIndx=1:nNoises
-      disp(['Working on noise index ', num2str(noiseIndx), ...
-        ' of ', num2str(nNoises)]);
-      noiseSig = noises(noiseIndx);
+%     nNoises = numel(noises);
+%     for noiseIndx=1:nNoises
+%       disp(['Working on noise index ', num2str(noiseIndx), ...
+%         ' of ', num2str(nNoises)]);
+      noiseSig = noises(noise_num);
 
       config.noiseSig = noiseSig/255; %standard deviation!
       config.h = 12*config.noiseSig;
@@ -113,7 +113,7 @@ function runStuff_PND
         pause(1);  %Make sure all data gets written
         disp(['Completed Algorithm ', func2str(algorithmHandle)]);
       end
-    end
+%     end
   end
 
   disp('Program complete');

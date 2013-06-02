@@ -184,9 +184,9 @@ for i = half_window+half_kernel+1:height-half_window-half_kernel
 end
 
 %-- show output image
-imshow( deNoisedImg, [] );
-drawnow; % make sure it's displayed
-pause(0.01); % make sure it's displayed
+% imshow( deNoisedImg, [] );
+% drawnow; % make sure it's displayed
+% pause(0.01); % make sure it's displayed
 
 
 borderSize = half_kernel+half_window+1;
