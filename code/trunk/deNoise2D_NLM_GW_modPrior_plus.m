@@ -61,7 +61,8 @@ parfor j=borderSize:M-borderSize
             C1 = normxcorr2(corrKer(:,:,1), corrSearch(:,:,1) );
             C2 = normxcorr2(corrKer(:,:,2), corrSearch(:,:,2) );
             C3 = normxcorr2(corrKer(:,:,3), corrSearch(:,:,3) );
-            C = ( C1 + C2 + C3 ) / 3;
+            %C = ( C1 + C2 + C3 ) / 3;
+            C = min( min( C1, C2 ), C3 );
         else
             kernel = noisyImg( j-halfKSize:j+halfKSize, ...
                 i-halfKSize:i+halfKSize );
