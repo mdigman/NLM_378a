@@ -1,4 +1,4 @@
-function output = deNoise2D_NLM_modPrior_plus( noisyImg, config )
+function output = deNoise2D_NLM_GW_euc_modPrior_plus( noisyImg, config )
 %-- Uses gaussian weighted L2 norm
 
 kSize = config.kSize;
@@ -7,12 +7,18 @@ h = config.h;
 noiseSig = config.noiseSig;
 color = config.color;
 
+hEuclidian = config.hEuclidian;
+hSqEuclidian = hEuclidian^2;
+
 lambda = 1;
 
 halfSearchSize = floor( searchSize/2 );
 halfKSize = floor( kSize/2 );
 
 bayes_dist_offset = sqrt(2*kSize^2 -1);
+
+eucDistsSq =  ones(searchSize,1)*((1:searchSize) -ceil(searchSize/2));
+eucDistsSq = eucDistsSq.^2 + (eucDistsSq').^2;
 
 a = 0.5*(kSize-1)/2;
 if color
@@ -78,7 +84,7 @@ parfor j=borderSize:M-borderSize
         for jP=0:searchSize-1
             for iP=0:searchSize-1
                 %disp(['(jP,iP): (',num2str(jP),',',num2str(iP),')']);
-                
+
                 vJ = j-halfSearchSize+jP;
                 vI = i-halfSearchSize+iP;
 
@@ -89,23 +95,20 @@ parfor j=borderSize:M-borderSize
                     v = noisyImg( vJ-halfKSize : vJ+halfKSize, ...
                         vI-halfKSize : vI+halfKSize  );
                 end
-                
+
                 %Gaussian weighted L2 norm squared
                 distSq = ( kernel - v ) .* ( kernel - v );
-                dists( jP+1, iP+1 ) = sqrt(sum( distSq(:) )); %L2 distance
-                
-                %weightedDistSq = distSq.*gaussKernel;
-                %weightedDistSq = sum( weightedDistSq(:) );
-                %localWeights( jP+1, iP+1,: ) = exp( - weightedDistSq / hSq );
-                
+                weightedDistSq = distSq.*gaussKernel;
+                dists( jP+1, iP+1, :) = sqrt(sum( weightedDistSq(:) )); %L2 distance
             end
         end
-        
+
         %Non-vectorized Bayesian Non-Local means weights
-        localWeights = exp( -0.5*(dists/noiseSig - bayes_dist_offset).^2 );
+        localWeights = exp( -0.5*(dists/noiseSig - bayes_dist_offset).^2 ).*...
+          exp( - eucDistsSq / hSqEuclidian );
         localWeights(halfSearchSize+1,halfSearchSize+1) = ...
           max( localWeights(:) );
-        
+
         C = max( C, 0 );
         if color
             tmp = corrKer(:,:,1);
@@ -119,7 +122,6 @@ parfor j=borderSize:M-borderSize
             varKer = var( corrKer(:) );
         end
         prior = C + exp( -( lambda * varKer) ) * (1-C);
-        prior = prior / ( sum(sum(prior)));
         if color
             localWeights(:,:,1) = localWeights(:,:,1) .* prior;
             localWeights(:,:,2) = localWeights(:,:,1);
@@ -134,7 +136,6 @@ parfor j=borderSize:M-borderSize
             i-halfSearchSize : i+halfSearchSize, : );
         
         deNoisedImg(j,i,:) = sum( sum( localWeights .* subImg ) ) ;
-        
     end
     
     %if mod(j,50)==0
@@ -156,5 +157,5 @@ end
 %-- copy output images
 output = struct();
 output.deNoisedImg = deNoisedImg;
-output.prefix = 'NLM_modPrior_plus_';
+output.prefix = 'NLM_GW_euc_modPrior_plus_';
 output.borderSize = borderSize;

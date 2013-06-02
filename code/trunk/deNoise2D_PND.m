@@ -5,6 +5,7 @@ kernel_edge = 7;
 window_edge = 21;
 half_kernel = floor(kernel_edge/2);
 half_window = floor(window_edge/2);
+sigma = config.noiseSig;
 
 % Pick Random Subsample of Pixels (num_img_pixels/10 pixels)
 num_img_pixels = height*width;
@@ -53,15 +54,22 @@ d = deNoise2D_PND_parallel(neighborhoods,eig_val);
 
 
 % Use only the d largest eigenvectors as our space
-b = eig_vec(:,end:-1:end-5);
+b = eig_vec(:,end:-1:end-d+1);
 
 % Estimate h
-m = 2.84;
-c = 13.81/256;
-h = m*sigma_hat+c;
+if (d <= 8)
+    m = 2.84; c = 13.81/256;
+elseif (d <= 15)
+    m = 3.15; c = 22.55/256;
+elseif (d < 35)
+    m = 3.9; c = 29.31/256;
+else
+    m = 5.43; c = 29.17/256;
+end
+h = m*sigma+c;
 
 % Project all neighborhoods into the d-dimensional subspace
-all_nhoods = zeros(height-2*half_kernel,width-2*half_kernel,d);
+all_nhoods = zeros(height,width,d);
 for i = half_kernel+1:height-half_kernel
     if(mod(i,50) == 0); fprintf('Projecting Row %d...\n',i); end
     for j = half_kernel+1:width-half_kernel
@@ -112,9 +120,9 @@ end
 % disp(sprintf('MSE = %d',MSE))
 
 %-- show output image
-imshow( deNoisedImg, [] );
-drawnow; % make sure it's displayed
-pause(0.01); % make sure it's displayed
+% imshow( deNoisedImg, [] );
+% drawnow; % make sure it's displayed
+% pause(0.01); % make sure it's displayed
 
 
 borderSize = half_kernel+half_window+1;

@@ -86,6 +86,8 @@ function output = deNoise2D_NLM_plus( noisyImg, config )
       
       %Non-vectorized Bayesian Non-Local means weights
       localWeights = exp( -0.5*(dists/noiseSig - bayes_dist_offset).^2 );
+      localWeights(halfSearchSize+1,halfSearchSize+1) = ...
+        max( localWeights(:) );
       
       if color
         localWeights = localWeights / sum( sum( localWeights(:,:,1) ) ); 
@@ -110,14 +112,8 @@ function output = deNoise2D_NLM_plus( noisyImg, config )
   catch me %#ok<NASGU>
   end
   
-
-  %% show output image
-  %imshow( deNoisedImg, [] );
-  drawnow; % make sure it's displayed
-  pause(0.01); % make sure it's displayed
-  
   %% copy output images
   output = struct();
   output.deNoisedImg = deNoisedImg;
-  output.prefix = 'NLM_';
+  output.prefix = 'NLM_plus_';
   output.borderSize = borderSize;

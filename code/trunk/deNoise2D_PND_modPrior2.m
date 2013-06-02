@@ -1,4 +1,4 @@
-function output = deNoise2D_PND_modPrior( noisyImg, config )
+function output = deNoise2D_PND_modPrior2( noisyImg, config )
 
 [height,width] = size(noisyImg);
 kernel_edge = 7;
@@ -91,6 +91,7 @@ h = m*sigma+c;
 
 % Project all neighborhoods into the d-dimensional subspace
 all_nhoods = zeros(height,width,d);
+all_nhoods_smooth = zeros(height,width,d);
 for i = half_kernel+1:height-half_kernel
     if(mod(i,50) == 0); fprintf('Projecting Row %d...\n',i); end
     for j = half_kernel+1:width-half_kernel
@@ -98,7 +99,10 @@ for i = half_kernel+1:height-half_kernel
 %                                             j-half_kernel:j+half_kernel));
         tmp_noisyImg = noisyImg(i-half_kernel:i+half_kernel, ...
                                 j-half_kernel:j+half_kernel);
+        tmp_smoothImg = smoothedImg(i-half_kernel:i+half_kernel, ...
+                                    j-half_kernel:j+half_kernel);
         all_nhoods(i,j,:) = b'*tmp_noisyImg(:);
+        all_nhoods_smooth(i,j,:) = b'*tmp_smoothImg(:);
     end
 end
 
@@ -119,13 +123,27 @@ for i = half_window+half_kernel+1:height-half_window-half_kernel
             C3 = normxcorr2(corrKer(:,:,3), corrSearch(:,:,3) );
             C = ( C1 + C2 + C3 ) / 3;
         else
-            corrKer = smoothedImg( i-half_kernel:i+half_kernel, ...
-                                   j-half_kernel:j+half_kernel);
-            corrSearch = smoothedImg( i-half_window:i+half_window, ...
-                                      j-half_window:j+half_window );
-            C = normxcorr2(corrKer, corrSearch);
+%             corrKer = smoothedImg( i-half_kernel:i+half_kernel, ...
+%                                    j-half_kernel:j+half_kernel);
+%             corrSearch = smoothedImg( i-half_window:i+half_window, ...
+%                                       j-half_window:j+half_window );
+%             C = normxcorr2(corrKer, corrSearch);
+            C = zeros(window_edge,window_edge);
+            template = reshape(all_nhoods_smooth(i,j,:),d,1);
+            mu_template = mean(template);
+            template_prime = template - mu_template;
+            norm_template_prime = 1/norm(template_prime,2).*template_prime;
+            for u = -half_window:half_window
+                for v = -half_window:half_window
+                    f = reshape(all_nhoods_smooth(i+u,j+v,:),d,1);
+                    f_prime = f-mean(f);
+                    norm_f_prime = 1/norm(f_prime,2).*f_prime;
+                    C(u+half_window+1,v+half_window+1) = ...
+                        1/(2*d)*norm_template_prime'*norm_f_prime;
+                end
+            end
         end
-        C = C( half_kernel+1:end-half_kernel, half_kernel+1:end-half_kernel );
+%         C = C( half_kernel+1:end-half_kernel, half_kernel+1:end-half_kernel );
         
         C = max( C, 0 );
         if color
@@ -137,7 +155,7 @@ for i = half_window+half_kernel+1:height-half_window-half_kernel
             varKer3 = var( tmp(:) );
             varKer = ( varKer1 + varKer2 + varKer3 ) / 3;
         else
-            varKer = var( corrKer(:) );
+            varKer = var( reshape(all_nhoods_smooth(i,j,:),d,1) );
         end
         prior = (C + exp( -( lambda * varKer) ) * (1-C)).* ...
                   exp( - eucDistsSq / hSqEuclidian );

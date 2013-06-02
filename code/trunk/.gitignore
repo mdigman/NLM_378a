@@ -3,3 +3,4 @@
 # Ignore image algorithm output folders
 output_*
 *.mat
+*.asv

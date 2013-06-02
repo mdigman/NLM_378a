@@ -28,7 +28,7 @@ deNoisedImg = noisyImg;
 
 borderSize = halfKSize+halfSearchSize+1;
 
-%% initialize progress tracker
+%-- initialize progress tracker
 try % Initialization
     ppm = ParforProgressStarter2(config.fileName, M-2*borderSize, 0.1);
 catch me % make sure "ParforProgressStarter2" didn't get moved to a different directory
@@ -45,7 +45,7 @@ catch me % make sure "ParforProgressStarter2" didn't get moved to a different di
 end
 
 
-%% perform algorithm
+%-- perform algorithm
 parfor j=borderSize:M-borderSize
     for i=borderSize:N-borderSize
         % As far as I (Thomas) know, noisyImg can't be easily sliced to
@@ -108,20 +108,15 @@ parfor j=borderSize:M-borderSize
 end
 
 
-%% clean up parallel
+%-- clean up parallel
 try % use try / catch here, since delete(struct) will raise an error.
     delete(ppm);
 catch me %#ok<NASGU>
 end
 
 
-%% show output image
-imshow( deNoisedImg, [] );
-drawnow; % make sure it's displayed
-pause(0.01); % make sure it's displayed
-
-%% copy output images
+%-- copy output images
 output = struct();
 output.deNoisedImg = deNoisedImg;
-output.prefix = 'NLM_';
+output.prefix = 'NLM_GW_';
 output.borderSize = borderSize;

@@ -14,7 +14,7 @@ function run_NLM_modPrior
   % TEST SUITE CONFIGURATION
   config.testSuiteAddNoise = true; %if false, will not add noise to the image. used when imputting images with noise already present.
   config.testSuiteUseExternalImage = false; %if true, will not read in any images, but will process based on what you pass in
-  config.color = true; %if true, will not convert to gray scale and will compute similarities based on color (RGB)
+  config.color = false; %if true, will not convert to gray scale and will compute similarities based on color (RGB)
 
   %test 1
   config.noiseSig = 20/255;

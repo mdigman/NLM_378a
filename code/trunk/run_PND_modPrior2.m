@@ -1,7 +1,7 @@
-function run_PND_Bayes
+function run_PND_modPrior2
 
 % FUNCTION HANDLE
-algorithmHandle = @deNoise2D_PND_Bayes;
+algorithmHandle = @deNoise2D_PND_modPrior2;
 
 % NLM CONFIGURATION VALUES (NOMINAL)
 config = struct();
@@ -16,6 +16,9 @@ config.noiseMean = 0;
 config.testSuiteAddNoise = true; %if false, will not add noise to the image. used when imputting images with noise already present.
 config.testSuiteUseExternalImage = false; %if true, will not read in any images, but will process based on what you pass in
 config.color = false; %if true, will not convert to gray scale and will compute similarities based on color (RGB)
+
+% OTHER CONFIG VALUES
+config.hEuclidian=8; %50/255 causes weights to converge to a single pixel
 
 %test 1
 config.noiseSig = 8/255;

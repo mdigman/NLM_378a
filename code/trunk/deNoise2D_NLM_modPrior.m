@@ -48,16 +48,15 @@ end
 %-- perform algorithm
 parfor j=borderSize:M-borderSize
     for i=borderSize:N-borderSize
-        
+
+        halfCorrSearchSize = halfSearchSize+halfKSize;
         if color
             kernel = noisyImg( j-halfKSize:j+halfKSize, ...
                 i-halfKSize:i+halfKSize, :);
-            search = noisyImg( j-halfSearchSize:j+halfSearchSize, ...
-                i-halfSearchSize:i+halfSearchSize, : );
             corrKer = smoothedImg( j-halfKSize:j+halfKSize, ...
                 i-halfKSize:i+halfKSize, :);
-            corrSearch = smoothedImg( j-halfSearchSize:j+halfSearchSize, ...
-                i-halfSearchSize:i+halfSearchSize, : );
+            corrSearch = smoothedImg( j-halfCorrSearchSize:j+halfCorrSearchSize, ...
+                i-halfCorrSearchSize:i+halfCorrSearchSize, : );
             localWeights = zeros( searchSize, searchSize , 3);
             C1 = normxcorr2(corrKer(:,:,1), corrSearch(:,:,1) );
             C2 = normxcorr2(corrKer(:,:,2), corrSearch(:,:,2) );
@@ -66,16 +65,14 @@ parfor j=borderSize:M-borderSize
         else
             kernel = noisyImg( j-halfKSize:j+halfKSize, ...
                 i-halfKSize:i+halfKSize );
-            search = noisyImg( j-halfSearchSize:j+halfSearchSize, ...
-                i-halfSearchSize:i+halfSearchSize );
             corrKer = smoothedImg( j-halfKSize:j+halfKSize, ...
                 i-halfKSize:i+halfKSize);
-            corrSearch = smoothedImg( j-halfSearchSize:j+halfSearchSize, ...
-                i-halfSearchSize:i+halfSearchSize );
+            corrSearch = smoothedImg( j-halfCorrSearchSize:j+halfCorrSearchSize, ...
+                i-halfCorrSearchSize:i+halfCorrSearchSize );
             localWeights = zeros( searchSize, searchSize );
             C = normxcorr2(corrKer, corrSearch);
         end
-        C = C( halfKSize+1:end-halfKSize, halfKSize+1:end-halfKSize );
+        C = C( 2*halfKSize+1:end-2*halfKSize, 2*halfKSize+1:end-2*halfKSize );
         
         for jP=0:searchSize-1
             for iP=0:searchSize-1
@@ -149,14 +146,8 @@ try % use try / catch here, since delete(struct) will raise an error.
 catch me %#ok<NASGU>
 end
 
-
-%-- show output image
-imshow( deNoisedImg, [] );
-drawnow; % make sure it's displayed
-pause(0.01); % make sure it's displayed
-
 %-- copy output images
 output = struct();
 output.deNoisedImg = deNoisedImg;
-output.prefix = 'NLM_';
+output.prefix = 'NLM_modPrior_';
 output.borderSize = borderSize;

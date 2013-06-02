@@ -1,9 +1,10 @@
-function output = deNoise2D_NLM_modPrior_plus( noisyImg, config )
+function output = deNoise2D_NLM_GW_modPrior( noisyImg, config )
 %-- Uses gaussian weighted L2 norm
 
 kSize = config.kSize;
 searchSize = config.searchSize;
 h = config.h;
+hSq = h^2;
 noiseSig = config.noiseSig;
 color = config.color;
 
@@ -11,8 +12,6 @@ lambda = 1;
 
 halfSearchSize = floor( searchSize/2 );
 halfKSize = floor( kSize/2 );
-
-bayes_dist_offset = sqrt(2*kSize^2 -1);
 
 a = 0.5*(kSize-1)/2;
 if color
@@ -45,10 +44,11 @@ catch me % make sure "ParforProgressStarter2" didn't get moved to a different di
     end
 end
 
+
 %-- perform algorithm
 parfor j=borderSize:M-borderSize
     for i=borderSize:N-borderSize
-
+        
         halfCorrSearchSize = halfSearchSize+halfKSize;
         if color
             kernel = noisyImg( j-halfKSize:j+halfKSize, ...
@@ -73,15 +73,15 @@ parfor j=borderSize:M-borderSize
             C = normxcorr2(corrKer, corrSearch);
         end
         C = C( 2*halfKSize+1:end-2*halfKSize, 2*halfKSize+1:end-2*halfKSize );
-
-        dists = zeros( searchSize, searchSize);
+        
         for jP=0:searchSize-1
             for iP=0:searchSize-1
                 %disp(['(jP,iP): (',num2str(jP),',',num2str(iP),')']);
                 
                 vJ = j-halfSearchSize+jP;
                 vI = i-halfSearchSize+iP;
-
+                
+                
                 if color
                     v = noisyImg( vJ-halfKSize : vJ+halfKSize, ...
                         vI-halfKSize : vI+halfKSize, : );
@@ -92,19 +92,13 @@ parfor j=borderSize:M-borderSize
                 
                 %Gaussian weighted L2 norm squared
                 distSq = ( kernel - v ) .* ( kernel - v );
-                dists( jP+1, iP+1 ) = sqrt(sum( distSq(:) )); %L2 distance
-                
-                %weightedDistSq = distSq.*gaussKernel;
-                %weightedDistSq = sum( weightedDistSq(:) );
-                %localWeights( jP+1, iP+1,: ) = exp( - weightedDistSq / hSq );
+                weightedDistSq = distSq.*gaussKernel;
+                localWeights( jP+1, iP+1 ,:) = sum( weightedDistSq(:) );
                 
             end
         end
         
-        %Non-vectorized Bayesian Non-Local means weights
-        localWeights = exp( -0.5*(dists/noiseSig - bayes_dist_offset).^2 );
-        localWeights(halfSearchSize+1,halfSearchSize+1) = ...
-          max( localWeights(:) );
+        localWeights = exp( -localWeights/hSq );
         
         C = max( C, 0 );
         if color
@@ -132,16 +126,16 @@ parfor j=borderSize:M-borderSize
         
         subImg = noisyImg( j-halfSearchSize : j+halfSearchSize, ...
             i-halfSearchSize : i+halfSearchSize, : );
-        
+
         deNoisedImg(j,i,:) = sum( sum( localWeights .* subImg ) ) ;
-        
+
     end
-    
+
     %if mod(j,50)==0
     %  imshow( [noisyImg, deNoisedImg], [] );
     %  drawnow;
     %end
-    
+
     ppm.increment(j);
 end
 
@@ -156,5 +150,5 @@ end
 %-- copy output images
 output = struct();
 output.deNoisedImg = deNoisedImg;
-output.prefix = 'NLM_modPrior_plus_';
+output.prefix = 'NLM_GW_modPrior_';
 output.borderSize = borderSize;
