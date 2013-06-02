@@ -129,5 +129,5 @@ borderSize = half_kernel+half_window+1;
 %-- copy output images
 output = struct();
 output.deNoisedImg = deNoisedImg;
-output.prefix = 'NLM_';
+output.prefix = 'PND_';
 output.borderSize = borderSize;
