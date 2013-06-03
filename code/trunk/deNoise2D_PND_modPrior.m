@@ -128,7 +128,7 @@ for i = half_window+half_kernel+1:height-half_window-half_kernel
                                       j-halfCorrSearchSize:j+halfCorrSearchSize );
             C = normxcorr2(corrKer, corrSearch);
         end
-        C = C( 2*halfKSize+1:end-2*halfKSize, 2*halfKSize+1:end-2*halfKSize );
+        C = C( 2*half_kernel+1:end-2*half_kernel, 2*half_kernel+1:end-2*half_kernel );
         
         C = max( C, 0 );
         if color
