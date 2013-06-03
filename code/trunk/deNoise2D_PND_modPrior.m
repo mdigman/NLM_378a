@@ -108,24 +108,27 @@ deNoisedImg = noisyImg;
 for i = half_window+half_kernel+1:height-half_window-half_kernel
     if(mod(i,10) == 0); fprintf('Denoising Row %d...\n',i);end
     for j = half_window+half_kernel+1:width-half_window-half_kernel
+
         % --------- Compute Prior Distribution --------
+        halfCorrSearchSize = half_window + half_kernel;
         if color
             corrKer = smoothedImg( i-half_kernel:i+half_kernel, ...
                                    j-half_kernel:j+half_kernel, :);
-            corrSearch = smoothedImg( i-half_window:i+half_window, ...
-                                      j-half_window:j+half_window, : );
+            corrSearch = smoothedImg( i-halfCorrSearchSize:i+halfCorrSearchSize, ...
+                                      j-halfCorrSearchSize:j+halfCorrSearchSize, : );
             C1 = normxcorr2(corrKer(:,:,1), corrSearch(:,:,1) );
             C2 = normxcorr2(corrKer(:,:,2), corrSearch(:,:,2) );
             C3 = normxcorr2(corrKer(:,:,3), corrSearch(:,:,3) );
-            C = ( C1 + C2 + C3 ) / 3;
+            %C = ( C1 + C2 + C3 ) / 3;
+            C = min( min( C1, C2 ), C3 );
         else
             corrKer = smoothedImg( i-half_kernel:i+half_kernel, ...
                                    j-half_kernel:j+half_kernel);
-            corrSearch = smoothedImg( i-half_window:i+half_window, ...
-                                      j-half_window:j+half_window );
+            corrSearch = smoothedImg( i-halfCorrSearchSize:i+halfCorrSearchSize, ...
+                                      j-halfCorrSearchSize:j+halfCorrSearchSize );
             C = normxcorr2(corrKer, corrSearch);
         end
-        C = C( half_kernel+1:end-half_kernel, half_kernel+1:end-half_kernel );
+        C = C( 2*halfKSize+1:end-2*halfKSize, 2*halfKSize+1:end-2*halfKSize );
         
         C = max( C, 0 );
         if color
