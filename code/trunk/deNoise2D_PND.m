@@ -26,7 +26,7 @@ psi = [y,x];
 % Collect Randomly selected Neighborhoods
 N = size(psi,1);
 neighborhoods = zeros(kernel_edge^2,N);
-parfor i = 1:N
+for i = 1:N
 %     neighborhoods(:,i) = vec(noisyImg(psi(i,1)-half_kernel:psi(i,1)+half_kernel, ...
 %                                       psi(i,2)-half_kernel:psi(i,2)+half_kernel));
     tmp_nhoods = noisyImg(psi(i,1)-half_kernel:psi(i,1)+half_kernel, ...
