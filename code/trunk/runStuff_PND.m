@@ -36,7 +36,7 @@ function runStuff_PND(noise_num)
   config.searchSize = 21; %nominal value is 21
   config.noiseMean = 0;
   config.color = color;
-  config.hEuclidian = 2;
+  config.hEuclidian = 8;
 
   % Process Images
   nImgs = numel(imgFiles);

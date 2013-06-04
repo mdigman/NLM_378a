@@ -68,7 +68,7 @@ M = kernel_edge^2;
 % end
 
 % Capture Smallest Eigenvalue
-sigma_hat = sqrt(eig_val(1,1));
+% sigma_hat = sqrt(eig_val(1,1));
 
 % -----------Parallel Analysis-------------
 d = deNoise2D_PND_parallel(neighborhoods,eig_val);
@@ -106,7 +106,7 @@ end
 fprintf('Doing NLM\n')
 deNoisedImg = noisyImg;
 for i = half_window+half_kernel+1:height-half_window-half_kernel
-    if(mod(i,10) == 0); fprintf('Denoising Row %d...\n',i);end
+%     if(mod(i,10) == 0); fprintf('Denoising Row %d...\n',i);end
     for j = half_window+half_kernel+1:width-half_window-half_kernel
 
         % --------- Compute Prior Distribution --------
