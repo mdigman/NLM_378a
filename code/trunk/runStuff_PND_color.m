@@ -1,6 +1,9 @@
 
 function runStuff_PND_color(noise_num)
-  matlabpool open 4
+
+  manycores = parallel.importProfile('matlab/manycores.settings');
+  matlabpool open manycores 12;
+  
   algorithms = { @deNoise2D_PND_color, @deNoise2D_PND_Euc_color, ...
                  @deNoise2D_PND_Euc_modPrior_color, ...
                  @deNoise2D_PND_modPrior_color, ...
@@ -117,5 +120,6 @@ function runStuff_PND_color(noise_num)
 %     end
   end
 
+  matlabpool close;
   disp('Program complete');
 end
