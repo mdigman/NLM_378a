@@ -1,4 +1,4 @@
-function output = deNoise2D_PND_modPrior2( noisyImg, config )
+function output = deNoise2D_PND_Euc( noisyImg, config )
 
 [height,width] = size(noisyImg);
 kernel_edge = 7;
@@ -12,21 +12,8 @@ color = config.color;
 hEuclidian = config.hEuclidian;
 hSqEuclidian = hEuclidian^2;
 
-lambda = 10;
-
 eucDistsSq =  ones(window_edge,1)*((1:window_edge) -ceil(window_edge/2));
 eucDistsSq = eucDistsSq.^2 + (eucDistsSq').^2;
-
-a = 0.5*(kernel_edge-1)/2;
-if color
-    gaussKernel = fspecial('gaussian', kernel_edge, a)*kernel_edge^2;
-    gaussKernel = repmat(gaussKernel, [1 1 3]);
-else
-    gaussKernel = fspecial('gaussian', kernel_edge, a)*kernel_edge^2;
-end
-
-smoothedImg = imfilter(noisyImg, gaussKernel, 'replicate');
-% ----- Initialize for Prior Computation ------
 
 % Pick Random Subsample of Pixels (num_img_pixels/10 pixels)
 num_img_pixels = height*width;
@@ -68,7 +55,7 @@ M = kernel_edge^2;
 % end
 
 % Capture Smallest Eigenvalue
-sigma_hat = sqrt(eig_val(1,1));
+%sigma_hat = sqrt(eig_val(1,1));
 
 % -----------Parallel Analysis-------------
 d = deNoise2D_PND_parallel(neighborhoods,eig_val);
@@ -91,18 +78,14 @@ h = m*sigma+c;
 
 % Project all neighborhoods into the d-dimensional subspace
 all_nhoods = zeros(height,width,d);
-all_nhoods_smooth = zeros(height,width,d);
 parfor i = half_kernel+1:height-half_kernel
-    if(mod(i,50) == 0); fprintf('Projecting Row %d...\n',i); end
+    %if(mod(i,50) == 0); fprintf('Projecting Row %d...\n',i); end
     for j = half_kernel+1:width-half_kernel
 %         all_nhoods(i,j,:) = b'*vec(noisyImg(i-half_kernel:i+half_kernel, ...
 %                                             j-half_kernel:j+half_kernel));
         tmp_noisyImg = noisyImg(i-half_kernel:i+half_kernel, ...
                                 j-half_kernel:j+half_kernel);
-        tmp_smoothImg = smoothedImg(i-half_kernel:i+half_kernel, ...
-                                    j-half_kernel:j+half_kernel);
         all_nhoods(i,j,:) = b'*tmp_noisyImg(:);
-        all_nhoods_smooth(i,j,:) = b'*tmp_smoothImg(:);
     end
 end
 
@@ -112,55 +95,6 @@ deNoisedImg = noisyImg;
 for i = half_window+half_kernel+1:height-half_window-half_kernel
     if(mod(i,10) == 0); fprintf('Denoising Row %d...\n',i);end
     parfor j = half_window+half_kernel+1:width-half_window-half_kernel
-        % --------- Compute Prior Distribution --------
-        if color
-            corrKer = smoothedImg( i-half_kernel:i+half_kernel, ...
-                                   j-half_kernel:j+half_kernel, :);
-            corrSearch = smoothedImg( i-half_window:i+half_window, ...
-                                      j-half_window:j+half_window, : );
-            C1 = normxcorr2(corrKer(:,:,1), corrSearch(:,:,1) );
-            C2 = normxcorr2(corrKer(:,:,2), corrSearch(:,:,2) );
-            C3 = normxcorr2(corrKer(:,:,3), corrSearch(:,:,3) );
-            C = ( C1 + C2 + C3 ) / 3;
-        else
-%             corrKer = smoothedImg( i-half_kernel:i+half_kernel, ...
-%                                    j-half_kernel:j+half_kernel);
-%             corrSearch = smoothedImg( i-half_window:i+half_window, ...
-%                                       j-half_window:j+half_window );
-%             C = normxcorr2(corrKer, corrSearch);
-            C = zeros(window_edge,window_edge);
-            template = reshape(all_nhoods_smooth(i,j,:),d,1);
-            mu_template = mean(template);
-            template_prime = template - mu_template;
-            norm_template_prime = 1/norm(template_prime,2).*template_prime;
-            for u = -half_window:half_window
-                for v = -half_window:half_window
-                    f = reshape(all_nhoods_smooth(i+u,j+v,:),d,1);
-                    f_prime = f-mean(f);
-                    norm_f_prime = 1/norm(f_prime,2).*f_prime;
-                    C(u+half_window+1,v+half_window+1) = ...
-                        1/(2*d)*norm_template_prime'*norm_f_prime;
-                end
-            end
-        end
-%         C = C( half_kernel+1:end-half_kernel, half_kernel+1:end-half_kernel );
-        
-        C = max( C, 0 );
-        if color
-            tmp = corrKer(:,:,1);
-            varKer1 = var( tmp(:) );
-            tmp = corrKer(:,:,2);
-            varKer2 = var( tmp(:) );
-            tmp = corrKer(:,:,3);
-            varKer3 = var( tmp(:) );
-            varKer = ( varKer1 + varKer2 + varKer3 ) / 3;
-        else
-            varKer = var( reshape(all_nhoods_smooth(i,j,:),d,1) );
-        end
-        prior = (C + exp( -( lambda * varKer) ) * (1-C)).* ...
-                  exp( - eucDistsSq / hSqEuclidian );
-        % -------- Compute Prior Distribution ---------------
-        
         % Get center neighborhood
         center = reshape(all_nhoods(i,j,:),d,1);
         % Get weights
@@ -172,9 +106,8 @@ for i = half_window+half_kernel+1:height-half_window-half_kernel
                                             exp(-norm(center-f_d,2)^2/h^2);
             end
         end
-        % Compute Weights with Prior
-        weights = weights.*prior;
         % Normalize weights
+        weights = weights .* exp( - eucDistsSq / hSqEuclidian );
         weights = 1/(sum(weights(:))).*weights;
         % Estimate Pixel
         u_tmp = noisyImg(i-half_window:i+half_window,j-half_window:j+half_window) ...
@@ -182,6 +115,18 @@ for i = half_window+half_kernel+1:height-half_window-half_kernel
         deNoisedImg(i,j) = sum(u_tmp(:));
     end
 end
+
+% figure(2);imshow(img);title('Original')
+% figure(3);imshow(noisyImg);title(sprintf('Noisy - sigma = %d', sigma*256))
+% figure(4);imshow(deNoisedImg);title('Denoised')
+% 
+% MSE =  norm(vec(img(half_window+1:end-half_window, ...
+%                     half_window+1:end-half_window))... 
+%             - ...
+%             vec(deNoisedImg(half_window+1:end-half_window, ...
+%                             half_window+1:end-half_window)) ...
+%             ,2);
+% disp(sprintf('MSE = %d',MSE))
 
 %-- show output image
 % imshow( deNoisedImg, [] );
@@ -193,5 +138,5 @@ borderSize = half_kernel+half_window+1;
 %-- copy output images
 output = struct();
 output.deNoisedImg = deNoisedImg;
-output.prefix = 'PND_modPrior2_';
+output.prefix = 'PND_Euc_';
 output.borderSize = borderSize;

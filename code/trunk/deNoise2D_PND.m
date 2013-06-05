@@ -26,7 +26,7 @@ psi = [y,x];
 % Collect Randomly selected Neighborhoods
 N = size(psi,1);
 neighborhoods = zeros(kernel_edge^2,N);
-for i = 1:N
+parfor i = 1:N
 %     neighborhoods(:,i) = vec(noisyImg(psi(i,1)-half_kernel:psi(i,1)+half_kernel, ...
 %                                       psi(i,2)-half_kernel:psi(i,2)+half_kernel));
     tmp_nhoods = noisyImg(psi(i,1)-half_kernel:psi(i,1)+half_kernel, ...
@@ -70,8 +70,8 @@ h = m*sigma+c;
 
 % Project all neighborhoods into the d-dimensional subspace
 all_nhoods = zeros(height,width,d);
-for i = half_kernel+1:height-half_kernel
-%     if(mod(i,50) == 0); fprintf('Projecting Row %d...\n',i); end
+parfor i = half_kernel+1:height-half_kernel
+    %if(mod(i,50) == 0); fprintf('Projecting Row %d...\n',i); end
     for j = half_kernel+1:width-half_kernel
 %         all_nhoods(i,j,:) = b'*vec(noisyImg(i-half_kernel:i+half_kernel, ...
 %                                             j-half_kernel:j+half_kernel));
@@ -85,8 +85,8 @@ end
 fprintf('Doing NLM\n')
 deNoisedImg = noisyImg;
 for i = half_window+half_kernel+1:height-half_window-half_kernel
-%     if(mod(i,10) == 0); fprintf('Denoising Row %d...\n',i);end
-    for j = half_window+half_kernel+1:width-half_window-half_kernel
+    if(mod(i,10) == 0); fprintf('Denoising Row %d...\n',i);end
+    parfor j = half_window+half_kernel+1:width-half_window-half_kernel
         % Get center neighborhood
         center = reshape(all_nhoods(i,j,:),d,1);
         % Get weights

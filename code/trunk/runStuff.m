@@ -8,11 +8,13 @@ function runStuff
     @deNoise2D_NLM_GW, @deNoise2D_NLM_GW_modPrior, ...
     @deNoise2D_NLM_GW_plus, @deNoise2D_NLM_GW_modPrior_plus, ...
     @deNoise2D_NLM_GW_euc, @deNoise2D_NLM_GW_Euc_modPrior, ...
-    @deNoise2D_NLM_GW_euc_plus, @deNoise2D_NLM_GW_euc_modPrior_plus };
+    @deNoise2D_NLM_GW_euc_plus, @deNoise2D_NLM_GW_euc_modPrior_plus, ...
+    @deNoise2D_PND, @deNoise2D_PND_modPrior, ...
+    @deNoise2D_PND_Euc, @deNoise2D_PND_Euc_modPrior };
   imgFiles = { 'lena.png', 'boat.png', 'mandrill.png', 'barbara.png', ...
     'comedian.png' };
   color = false;
-  noises = [ 8, 20, 25, 35, 40, 100 ];
+  noises = [ 8, 20, 25, 35, 40 ];
   noiseMean = 0;
 
   if isunix
@@ -42,7 +44,7 @@ function runStuff
   config.searchSize = 21; %nominal value is 21
   config.noiseMean = 0;
   config.color = color;
-  config.hEuclidian = 2;
+  config.hEuclidian = 8;
 
   % Process Images
   nImgs = numel(imgFiles);
@@ -105,6 +107,11 @@ function runStuff
         magDiffImg = abs( img - output.deNoisedImg );
         imwrite( magDiffImg, [outDir, fileSepChar, output.prefix, ...
           'diff_sig',num2str(noiseSig),imgFiles{imgIndx}] );
+
+        magDiffImg255 = 255 * magDiffImg;
+	logDiff = log( max( magDiffImg255, 1 ) );
+        imwrite( magDiffImg255, [outDir, fileSepChar, output.prefix, ...
+          'logDiff_sig',num2str(noiseSig),imgFiles{imgIndx}] );
 
         %calculate mse
         mse = calculateMSE( img, output.deNoisedImg, output.borderSize );

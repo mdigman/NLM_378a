@@ -9,13 +9,13 @@ sigma = config.noiseSig;
 
 % ----- Initialize for Prior Computation ------
 color = config.color;
-hEuclidian = config.hEuclidian;
-hSqEuclidian = hEuclidian^2;
+% hEuclidian = config.hEuclidian;
+% hSqEuclidian = hEuclidian^2;
 
-lambda = 1;
+lambda = 1.0;
 
-eucDistsSq =  ones(window_edge,1)*((1:window_edge) -ceil(window_edge/2));
-eucDistsSq = eucDistsSq.^2 + (eucDistsSq').^2;
+% eucDistsSq =  ones(window_edge,1)*((1:window_edge) -ceil(window_edge/2));
+% eucDistsSq = eucDistsSq.^2 + (eucDistsSq').^2;
 
 a = 0.5*(kernel_edge-1)/2;
 if color
@@ -47,7 +47,7 @@ psi = [y,x];
 % Collect Randomly selected Neighborhoods
 N = size(psi,1);
 neighborhoods = zeros(kernel_edge^2,N);
-for i = 1:N
+parfor i = 1:N
 %     neighborhoods(:,i) = vec(noisyImg(psi(i,1)-half_kernel:psi(i,1)+half_kernel, ...
 %                                       psi(i,2)-half_kernel:psi(i,2)+half_kernel));
     tmp_nhoods = noisyImg(psi(i,1)-half_kernel:psi(i,1)+half_kernel, ...
@@ -68,7 +68,7 @@ M = kernel_edge^2;
 % end
 
 % Capture Smallest Eigenvalue
-% sigma_hat = sqrt(eig_val(1,1));
+sigma_hat = sqrt(eig_val(1,1));
 
 % -----------Parallel Analysis-------------
 d = deNoise2D_PND_parallel(neighborhoods,eig_val);
@@ -91,7 +91,7 @@ h = m*sigma+c;
 
 % Project all neighborhoods into the d-dimensional subspace
 all_nhoods = zeros(height,width,d);
-for i = half_kernel+1:height-half_kernel
+parfor i = half_kernel+1:height-half_kernel
     if(mod(i,50) == 0); fprintf('Projecting Row %d...\n',i); end
     for j = half_kernel+1:width-half_kernel
 %         all_nhoods(i,j,:) = b'*vec(noisyImg(i-half_kernel:i+half_kernel, ...
@@ -106,8 +106,8 @@ end
 fprintf('Doing NLM\n')
 deNoisedImg = noisyImg;
 for i = half_window+half_kernel+1:height-half_window-half_kernel
-%     if(mod(i,10) == 0); fprintf('Denoising Row %d...\n',i);end
-    for j = half_window+half_kernel+1:width-half_window-half_kernel
+    if(mod(i,10) == 0); fprintf('Denoising Row %d...\n',i);end
+    parfor j = half_window+half_kernel+1:width-half_window-half_kernel
 
         % --------- Compute Prior Distribution --------
         halfCorrSearchSize = half_window + half_kernel;
@@ -142,8 +142,9 @@ for i = half_window+half_kernel+1:height-half_window-half_kernel
         else
             varKer = var( corrKer(:) );
         end
-        prior = (C + exp( -( lambda * varKer) ) * (1-C)).* ...
-                  exp( - eucDistsSq / hSqEuclidian );
+        %prior = (C + exp( -( lambda * varKer) ) * (1-C)).* ...
+        %          exp( - eucDistsSq / hSqEuclidian );
+        prior = (C + exp( -( lambda * varKer) ) * (1-C));
         % -------- Compute Prior Distribution ---------------
         
         % Get center neighborhood
