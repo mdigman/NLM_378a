@@ -1,6 +1,6 @@
 function output = deNoise2D_PND_Euc_color( noisyImg, config )
 
-[height,width] = size(noisyImg);
+[height,width,chan] = size(noisyImg);
 kernel_edge = 7;
 window_edge = 21;
 half_kernel = floor(kernel_edge/2);
@@ -33,7 +33,7 @@ psi = [y,x];
 % -----------PCA-------------
 % Collect Randomly selected Neighborhoods
 N = size(psi,1);
-neighborhoods = zeros(kernel_edge^2,N);
+neighborhoods = zeros(chan*kernel_edge^2,N);
 parfor i = 1:N
 %     neighborhoods(:,i) = vec(noisyImg(psi(i,1)-half_kernel:psi(i,1)+half_kernel, ...
 %                                       psi(i,2)-half_kernel:psi(i,2)+half_kernel));

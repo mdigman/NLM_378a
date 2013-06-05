@@ -28,7 +28,7 @@ function runStuff_PND_color(noise_num)
   dateTime = strrep(dateTime, ':', '');
   dateTime = strrep(dateTime, '-', '');
   dateTime = strrep(dateTime, ' ', '_');
-  outDir = ['output_',num2str(noises(noise_num)),'_',dateTime];
+  outDir = ['output_',dateTime];
   mkdir(outDir);
 
   logID = fopen([outDir,fileSepChar,'log.csv'], 'w');
