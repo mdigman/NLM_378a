@@ -95,6 +95,12 @@ function runStuff
         config.fileName = imgFile;
 
         algorithmHandle = algorithms{algIndx};
+        algorithmStr = func2str( algorithmHandle );
+        isPND = regex( algorithmStr, 'PND' );
+        if numel(isPND)>0 && config.color==true
+          algorithmStr = [ algorithmStr, '_color' ];
+          algorithmHandle = str2func( algorithmStr );
+        else
         tic
         output = algorithmHandle(noisyImg, config);
         runtime = toc;
@@ -109,7 +115,7 @@ function runStuff
           'diff_sig',num2str(noiseSig),imgFiles{imgIndx}] );
 
         magDiffImg255 = 255 * magDiffImg;
-	logDiff = log( max( magDiffImg255, 1 ) );
+        logDiff = log( max( magDiffImg255, 1 ) );
         imwrite( magDiffImg255, [outDir, fileSepChar, output.prefix, ...
           'logDiff_sig',num2str(noiseSig),imgFiles{imgIndx}] );
 
