@@ -9,7 +9,7 @@ function runStuff_PND_color(noise_num)
                  @deNoise2D_PND_modPrior_color, ...
                  @deNoise2D_PND_modPrior2_color};
   imgFiles = {'barbara.png','lena.png','mandrill.png', 'airplane.bmp', 'goldhill.bmp'};
-  color = false;
+  color = true;
   noises = [ 8, 20, 25, 35, 40, 100 ];
   noiseMean = 0;
 
