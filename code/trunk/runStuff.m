@@ -96,8 +96,8 @@ function runStuff
 
         algorithmHandle = algorithms{algIndx};
         algorithmStr = func2str( algorithmHandle );
-        isPND = regex( algorithmStr, 'PND' );
-        if numel(isPND)>0 && config.color==true
+        isPND = regexp( {algorithmStr}, 'PND' );
+        if numel(isPND{1})>0 && config.color==true
           algorithmStr = [ algorithmStr, '_color' ];
           algorithmHandle = str2func( algorithmStr );
         else
