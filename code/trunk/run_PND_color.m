@@ -20,7 +20,7 @@ config.color = true; %if true, will not convert to gray scale and will compute s
 %test 1
 config.noiseSig = 20/255;
 config.h = 12*config.noiseSig;
-config.testSuiteUseImages = {'barbara.png','lena.png','mandrill.png', 'airplane.bmp', 'goldhill.bmp'};
+config.testSuiteUseImages = {'barbara.png'};%,'lena.png','mandrill.png', 'airplane.bmp', 'goldhill.bmp'};
 %     'comedian.png', 'boat.png', 
 test_suite(algorithmHandle, config);
 
