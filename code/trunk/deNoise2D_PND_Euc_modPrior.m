@@ -14,18 +14,22 @@ color = config.color;
 
 lambda = 1.0;
 
- eucDistsSq =  ones(window_edge,1)*((1:window_edge) -ceil(window_edge/2));
- eucDistsSq = eucDistsSq.^2 + (eucDistsSq').^2;
+eucDistsSq =  ones(window_edge,1)*((1:window_edge) -ceil(window_edge/2));
+eucDistsSq = eucDistsSq.^2 + (eucDistsSq').^2;
 
 a = 0.5*(kernel_edge-1)/2;
+gaussKernel = fspecial('gaussian', kernel_edge, a);
 if color
-    gaussKernel = fspecial('gaussian', kernel_edge, a)*kernel_edge^2;
-    gaussKernel = repmat(gaussKernel, [1 1 3]);
+    [M N C] = size( noisyImg );
+    smoothedImg = noisyImg;
+    smoothedImg(:,:,1) = imfilter( squeeze(noisyImg(:,:,1)), gaussKernel, 'replicate');
+    smoothedImg(:,:,2) = imfilter( squeeze(noisyImg(:,:,2)), gaussKernel, 'replicate');
+    smoothedImg(:,:,3) = imfilter( squeeze(noisyImg(:,:,3)), gaussKernel, 'replicate');
 else
-    gaussKernel = fspecial('gaussian', kernel_edge, a)*kernel_edge^2;
+    [M N] = size( noisyImg );
+    smoothedImg = imfilter(noisyImg, gaussKernel, 'replicate');
 end
 
-smoothedImg = imfilter(noisyImg, gaussKernel, 'replicate');
 % ----- Initialize for Prior Computation ------
 
 % Pick Random Subsample of Pixels (num_img_pixels/10 pixels)

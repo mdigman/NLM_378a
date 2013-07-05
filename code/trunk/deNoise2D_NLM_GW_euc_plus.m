@@ -18,7 +18,7 @@ function output = deNoise2D_NLM_GW_Euc_plus( noisyImg, config )
   eucDistsSq = eucDistsSq.^2 + (eucDistsSq').^2;
 
   a = 0.5*(kSize-1)/2;
-  gaussKernel = fspecial('gaussian', kSize, a)*kSize^2;
+  gaussKernel = fspecial('gaussian', kSize, a);
   if color
     [M N C] = size( noisyImg );
     gaussKernel = repmat(gaussKernel, [1 1 3]);
@@ -76,7 +76,7 @@ function output = deNoise2D_NLM_GW_Euc_plus( noisyImg, config )
           end
 
           distSq = ( kernel - v ) .* ( kernel - v );
-          weightedDistSq = distSq.*gaussKernel;
+          weightedDistSq = distSq.*gaussKernel*kSize^2;
           dists( jP+1, iP+1 ) = sqrt(sum( weightedDistSq(:) )); %L2 distance
         end
       end

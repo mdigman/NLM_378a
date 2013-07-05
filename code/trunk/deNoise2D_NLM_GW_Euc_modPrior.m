@@ -19,15 +19,19 @@ function output = deNoise2D_NLM_GW_Euc_modPrior( noisyImg, config )
   eucDistsSq = eucDistsSq.^2 + (eucDistsSq').^2;
 
   a = 0.5*(kSize-1)/2;
-  gaussKernel = fspecial('gaussian', kSize, a)*kSize^2;
+  gaussKernel = fspecial('gaussian', kSize, a);
   if color
-    [M N C] = size( noisyImg );
-    gaussKernel = repmat(gaussKernel, [1 1 3]);
+      [M N C] = size( noisyImg );
+      smoothedImg = noisyImg;
+      smoothedImg(:,:,1) = imfilter( squeeze(noisyImg(:,:,1)), gaussKernel, 'replicate');
+      smoothedImg(:,:,2) = imfilter( squeeze(noisyImg(:,:,2)), gaussKernel, 'replicate');
+      smoothedImg(:,:,3) = imfilter( squeeze(noisyImg(:,:,3)), gaussKernel, 'replicate');
+      gaussKernel = repmat(gaussKernel, [1 1 3]);
   else
-    [M N] = size( noisyImg );
+      [M N] = size( noisyImg );
+      smoothedImg = imfilter(noisyImg, gaussKernel, 'replicate');
   end
 
-  smoothedImg = imfilter(noisyImg, gaussKernel, 'replicate');
   deNoisedImg = noisyImg;
 
   borderSize = halfKSize+halfSearchSize+1;
@@ -94,7 +98,7 @@ function output = deNoise2D_NLM_GW_Euc_modPrior( noisyImg, config )
           end
 
           distSq = ( kernel - v ) .* ( kernel - v );
-          weightedDistSq = distSq.*gaussKernel;
+          weightedDistSq = distSq.*gaussKernel*kSize^2;
           localWeights( jP+1, iP+1 ) = sum( weightedDistSq(:) );
         end
       end

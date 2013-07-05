@@ -17,7 +17,7 @@ function output = deNoise2D_NLM_GW_Euc( noisyImg, config )
   eucDistsSq = eucDistsSq.^2 + (eucDistsSq').^2;
 
   a = 0.5*(kSize-1)/2;
-  gaussKernel = fspecial('gaussian', kSize, a)*kSize^2;
+  gaussKernel = fspecial('gaussian', kSize, a);
   if color
     [M N C] = size( noisyImg );
     gaussKernel = repmat(gaussKernel, [1 1 3]);
@@ -74,7 +74,7 @@ function output = deNoise2D_NLM_GW_Euc( noisyImg, config )
           end
 
           distSq = ( kernel - v ) .* ( kernel - v );
-          weightedDistSq = distSq.*gaussKernel;
+          weightedDistSq = distSq.*gaussKernel*kSize^2;
           weightedDistSq = sum( weightedDistSq(:) );
 
           localWeights( jP+1, iP+1 ) = exp( - weightedDistSq / hSq );

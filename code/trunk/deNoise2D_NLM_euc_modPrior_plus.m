@@ -20,16 +20,18 @@ eucDistsSq =  ones(searchSize,1)*((1:searchSize) -ceil(searchSize/2));
 eucDistsSq = eucDistsSq.^2 + (eucDistsSq').^2;
 
 a = 0.5*(kSize-1)/2;
+gaussKernel = fspecial('gaussian', kSize, a);
 if color
     [M N C] = size( noisyImg );
-    gaussKernel = fspecial('gaussian', kSize, a)*kSize^2;
-    gaussKernel = repmat(gaussKernel, [1 1 3]);
+    smoothedImg = noisyImg;
+    smoothedImg(:,:,1) = imfilter( squeeze(noisyImg(:,:,1)), gaussKernel, 'replicate');
+    smoothedImg(:,:,2) = imfilter( squeeze(noisyImg(:,:,2)), gaussKernel, 'replicate');
+    smoothedImg(:,:,3) = imfilter( squeeze(noisyImg(:,:,3)), gaussKernel, 'replicate');
 else
     [M N] = size( noisyImg );
-    gaussKernel = fspecial('gaussian', kSize, a)*kSize^2;
+    smoothedImg = imfilter(noisyImg, gaussKernel, 'replicate');
 end
 
-smoothedImg = imfilter(noisyImg, gaussKernel, 'replicate');
 deNoisedImg = noisyImg;
 
 borderSize = halfKSize+halfSearchSize+1;
