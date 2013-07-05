@@ -8,20 +8,19 @@ function output = deNoise2D_NLM_plus( noisyImg, config )
 
   halfSearchSize = floor( searchSize/2 );
   halfKSize = floor( kSize/2 );
-  
+
   bayes_dist_offset = sqrt(2*kSize^2 -1);
-  
+
   if color
     [M N C] = size( noisyImg );
   else
     [M N] = size( noisyImg );
   end
-
   deNoisedImg = noisyImg;
 
   borderSize = halfKSize+halfSearchSize+1;
-  
-  %% initialize progress tracker
+
+  %-- initialize progress tracker
   try % Initialization
     ppm = ParforProgressStarter2(config.fileName, M-2*borderSize, 0.1);
   catch me % make sure "ParforProgressStarter2" didn't get moved to a different directory
@@ -38,14 +37,10 @@ function output = deNoise2D_NLM_plus( noisyImg, config )
   end
 
 
-  %% perform algorithm
+  %-- perform algorithm
   parfor j=borderSize:M-borderSize
     for i=borderSize:N-borderSize
-      % As far as I (Thomas) know, noisyImg can't be easily sliced to
-      % improve performance. Instead, one would have to use spmd to do
-      % such things. However, most of the time is spent in the two inner 
-      % loops anyway 
-      
+
       if color
         kernel = noisyImg( j-halfKSize:j+halfKSize, ...
           i-halfKSize:i+halfKSize, :);
@@ -53,6 +48,7 @@ function output = deNoise2D_NLM_plus( noisyImg, config )
         kernel = noisyImg( j-halfKSize:j+halfKSize, ...
           i-halfKSize:i+halfKSize );
       end
+
       dists = zeros( searchSize, searchSize);
 
       for jP=0:searchSize-1
@@ -61,7 +57,7 @@ function output = deNoise2D_NLM_plus( noisyImg, config )
 
           vJ = j-halfSearchSize+jP;
           vI = i-halfSearchSize+iP;
-          
+
           if color
             v = noisyImg( vJ-halfKSize : vJ+halfKSize, ...
               vI-halfKSize : vI+halfKSize, : );
@@ -69,12 +65,13 @@ function output = deNoise2D_NLM_plus( noisyImg, config )
             v = noisyImg( vJ-halfKSize : vJ+halfKSize, ...
               vI-halfKSize : vI+halfKSize  );
           end
+
           distSq = ( kernel - v ) .* ( kernel - v );
           dists( jP+1, iP+1 ) = sqrt(sum( distSq(:) )); %L2 distance
 
         end
       end
-      
+
       %Non-vectorized Bayesian Non-Local means weights
       localWeights = exp( -0.5*(dists/noiseSig - bayes_dist_offset).^2 );
       localWeights(halfSearchSize+1,halfSearchSize+1) = ...
@@ -84,26 +81,28 @@ function output = deNoise2D_NLM_plus( noisyImg, config )
       if color
         localWeights = repmat( localWeights, [1 1 3] );
       end
-      
+
       subImg = noisyImg( j-halfSearchSize : j+halfSearchSize, ...
-          i-halfSearchSize : i+halfSearchSize, : );
-      
+        i-halfSearchSize : i+halfSearchSize, : );
+
       deNoisedImg(j,i,:) = sum( sum( localWeights .* subImg ) ) ;
-      
+
     end
 
     ppm.increment(j);
   end
-  
-  
-  %% clean up parallel
+
+
+  %-- clean up parallel
   try % use try / catch here, since delete(struct) will raise an error.
-      delete(ppm);
+    delete(ppm);
   catch me %#ok<NASGU>
   end
-  
-  %% copy output images
+
+  %-- copy output images
   output = struct();
   output.deNoisedImg = deNoisedImg;
   output.prefix = 'NLM_plus_';
   output.borderSize = borderSize;
+
+end

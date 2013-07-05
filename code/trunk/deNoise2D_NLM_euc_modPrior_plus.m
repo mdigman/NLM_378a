@@ -1,4 +1,4 @@
-function output = deNoise2D_NLM_euc_modPrior_plus( noisyImg, config )
+function output = deNoise2D_NLM_Euc_modPrior_plus( noisyImg, config )
 
 kSize = config.kSize;
 searchSize = config.searchSize;
@@ -100,7 +100,7 @@ parfor j=borderSize:M-borderSize
             end
         end
 
-        localWeights = exp( -0.5*(dists/noiseSig - bayes_dist_offset).^2 ).*...
+        localWeights = exp( -0.5*(dists/noiseSig - bayes_dist_offset).^2 ) .* ...
           exp( - eucDistsSq / hSqEuclidian );
         localWeights(halfSearchSize+1,halfSearchSize+1) = ...
           max( localWeights(:) );
