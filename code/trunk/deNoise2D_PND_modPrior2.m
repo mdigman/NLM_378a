@@ -48,8 +48,6 @@ psi = [y,x];
 N = size(psi,1);
 neighborhoods = zeros(kernel_edge^2,N);
 parfor i = 1:N
-%     neighborhoods(:,i) = vec(noisyImg(psi(i,1)-half_kernel:psi(i,1)+half_kernel, ...
-%                                       psi(i,2)-half_kernel:psi(i,2)+half_kernel));
     tmp_nhoods = noisyImg(psi(i,1)-half_kernel:psi(i,1)+half_kernel, ...
                           psi(i,2)-half_kernel:psi(i,2)+half_kernel);
     neighborhoods(:,i) = tmp_nhoods(:);
@@ -59,16 +57,8 @@ end
 M = kernel_edge^2;
 [eig_vec,eig_val] = deNoise2D_PND_PCA(neighborhoods);
 
-% % Show top 6 neighborhoods
-% figure(1)
-% for i = 1:6
-%     subplot(2,3,i);
-%     imshow(reshape(eig_vec(:,end-i+1),kernel_edge,kernel_edge));
-%     title(i)
-% end
-
 % Capture Smallest Eigenvalue
-sigma_hat = sqrt(eig_val(1,1));
+% sigma_hat = sqrt(eig_val(1,1));
 
 % -----------Parallel Analysis-------------
 d = deNoise2D_PND_parallel(neighborhoods,eig_val);
@@ -87,16 +77,13 @@ elseif (d < 35)
 else
     m = 5.43; c = 29.17/256;
 end
-h = m*sigma+c;
+h = m*sigma+c;      % Use sigma instead of PND-generated sigma_hat
 
 % Project all neighborhoods into the d-dimensional subspace
 all_nhoods = zeros(height,width,d);
 all_nhoods_smooth = zeros(height,width,d);
 parfor i = half_kernel+1:height-half_kernel
-    if(mod(i,50) == 0); fprintf('Projecting Row %d...\n',i); end
     for j = half_kernel+1:width-half_kernel
-%         all_nhoods(i,j,:) = b'*vec(noisyImg(i-half_kernel:i+half_kernel, ...
-%                                             j-half_kernel:j+half_kernel));
         tmp_noisyImg = noisyImg(i-half_kernel:i+half_kernel, ...
                                 j-half_kernel:j+half_kernel);
         tmp_smoothImg = smoothedImg(i-half_kernel:i+half_kernel, ...
@@ -123,11 +110,6 @@ for i = half_window+half_kernel+1:height-half_window-half_kernel
             C3 = normxcorr2(corrKer(:,:,3), corrSearch(:,:,3) );
             C = ( C1 + C2 + C3 ) / 3;
         else
-%             corrKer = smoothedImg( i-half_kernel:i+half_kernel, ...
-%                                    j-half_kernel:j+half_kernel);
-%             corrSearch = smoothedImg( i-half_window:i+half_window, ...
-%                                       j-half_window:j+half_window );
-%             C = normxcorr2(corrKer, corrSearch);
             C = zeros(window_edge,window_edge);
             template = reshape(all_nhoods_smooth(i,j,:),d,1);
             mu_template = mean(template);
@@ -143,8 +125,6 @@ for i = half_window+half_kernel+1:height-half_window-half_kernel
                 end
             end
         end
-%         C = C( half_kernel+1:end-half_kernel, half_kernel+1:end-half_kernel );
-        
         C = max( C, 0 );
         if color
             tmp = corrKer(:,:,1);
@@ -159,8 +139,7 @@ for i = half_window+half_kernel+1:height-half_window-half_kernel
         end
         prior = (C + exp( -( lambda * varKer) ) * (1-C)).* ...
                   exp( - eucDistsSq / hSqEuclidian );
-        % -------- Compute Prior Distribution ---------------
-        
+              
         % Get center neighborhood
         center = reshape(all_nhoods(i,j,:),d,1);
         % Get weights
@@ -182,12 +161,6 @@ for i = half_window+half_kernel+1:height-half_window-half_kernel
         deNoisedImg(i,j) = sum(u_tmp(:));
     end
 end
-
-%-- show output image
-% imshow( deNoisedImg, [] );
-% drawnow; % make sure it's displayed
-% pause(0.01); % make sure it's displayed
-
 
 borderSize = half_kernel+half_window+1;
 %-- copy output images
