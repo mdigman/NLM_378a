@@ -75,7 +75,6 @@ function output = deNoise2D_NLM_Euc_plus( noisyImg, config )
 
           distSq = ( kernel - v ) .* ( kernel - v );
           dists( jP+1, iP+1 ,:) = sqrt(sum( distSq(:) )); %L2 distance
-
         end
       end
 

@@ -12,22 +12,23 @@ color = config.color;
 % hEuclidian = config.hEuclidian;
 % hSqEuclidian = hEuclidian^2;
 
-lambda = 1d3;
+lambda = 1d4;
 
 % eucDistsSq =  ones(window_edge,1)*((1:window_edge) -ceil(window_edge/2));
 % eucDistsSq = eucDistsSq.^2 + (eucDistsSq').^2;
 
 a = 0.5*(kernel_edge-1)/2;
 gaussKernel = fspecial('gaussian', kernel_edge, a);
+smoothKernel = fspecial('gaussian', kernel_edge*2, 2*a );
 if color
     [M N C] = size( noisyImg );
     smoothedImg = noisyImg;
-    smoothedImg(:,:,1) = imfilter( squeeze(noisyImg(:,:,1)), gaussKernel, 'replicate');
-    smoothedImg(:,:,2) = imfilter( squeeze(noisyImg(:,:,2)), gaussKernel, 'replicate');
-    smoothedImg(:,:,3) = imfilter( squeeze(noisyImg(:,:,3)), gaussKernel, 'replicate');
+    smoothedImg(:,:,1) = imfilter( squeeze(noisyImg(:,:,1)), smoothKernel, 'replicate');
+    smoothedImg(:,:,2) = imfilter( squeeze(noisyImg(:,:,2)), smoothKernel, 'replicate');
+    smoothedImg(:,:,3) = imfilter( squeeze(noisyImg(:,:,3)), smoothKernel, 'replicate');
 else
     [M N] = size( noisyImg );
-    smoothedImg = imfilter(noisyImg, gaussKernel, 'replicate');
+    smoothedImg = imfilter(noisyImg, smoothKernel, 'replicate');
 end
 
 % ----- Initialize for Prior Computation ------
