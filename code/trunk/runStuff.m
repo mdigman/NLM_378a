@@ -11,11 +11,11 @@ function runStuff
     @deNoise2D_NLM_GW_Euc_plus, @deNoise2D_NLM_GW_Euc_modPrior_plus, ...
     @deNoise2D_PND, @deNoise2D_PND_modPrior, ...
     @deNoise2D_PND_Euc, @deNoise2D_PND_Euc_modPrior };
-  
+
   imgFiles = { 'lena.png', 'boat.png', 'mandrill.png', 'barbara.png', ...
     'comedian.png' };
   color = false;
-  noises = [ 8, 20, 25, 35, 40 ];
+  noises = [ 20, 25, 8, 35, 40 ];
   noiseMean = 0;
 
   if isunix
@@ -113,13 +113,13 @@ function runStuff
         imwrite( output.deNoisedImg, deNoisedFile );
 
         magDiffImg = abs( img - output.deNoisedImg );
-        imwrite( magDiffImg, [outDir, fileSepChar, output.prefix, ...
-          'diff_sig',num2str(noiseSig),imgFiles{imgIndx}] );
+        imwrite( magDiffImg, [outDir, fileSepChar, 'diff_', ...
+          output.prefix, 'sig',num2str(noiseSig),imgFiles{imgIndx}] );
 
         magDiffImg255 = 255 * magDiffImg;
         logDiff = log( max( magDiffImg255, 1 ) );
-        imwrite( magDiffImg255, [outDir, fileSepChar, output.prefix, ...
-          'logDiff_sig',num2str(noiseSig),imgFiles{imgIndx}] );
+        imwrite( magDiffImg255, [outDir, fileSepChar, 'logDiff_', ...
+          output.prefix, 'sig',num2str(noiseSig),imgFiles{imgIndx}] );
 
         %calculate mse
         mse = calculateMSE( img, output.deNoisedImg, output.borderSize );

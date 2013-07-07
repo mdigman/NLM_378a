@@ -7,7 +7,7 @@ function output = deNoise2D_NLM_Euc_modPrior( noisyImg, config )
   noiseSig = config.noiseSig;
   color = config.color;
 
-  lambda = 1d3;
+  lambda = 1d4;
 
   halfSearchSize = floor( searchSize/2 );
   halfKSize = floor( kSize/2 );
@@ -19,15 +19,16 @@ function output = deNoise2D_NLM_Euc_modPrior( noisyImg, config )
 
   a = 0.5*(kSize-1)/2;
   gaussKernel = fspecial('gaussian', kSize, a);
+  smoothKernel = fspecial('gaussian', kSize*2, 2*a );
   if color
       [M N C] = size( noisyImg );
       smoothedImg = noisyImg;
-      smoothedImg(:,:,1) = imfilter( squeeze(noisyImg(:,:,1)), gaussKernel, 'replicate');
-      smoothedImg(:,:,2) = imfilter( squeeze(noisyImg(:,:,2)), gaussKernel, 'replicate');
-      smoothedImg(:,:,3) = imfilter( squeeze(noisyImg(:,:,3)), gaussKernel, 'replicate');
+      smoothedImg(:,:,1) = imfilter( squeeze(noisyImg(:,:,1)), smoothKernel, 'replicate');
+      smoothedImg(:,:,2) = imfilter( squeeze(noisyImg(:,:,2)), smoothKernel, 'replicate');
+      smoothedImg(:,:,3) = imfilter( squeeze(noisyImg(:,:,3)), smoothKernel, 'replicate');
   else
       [M N] = size( noisyImg );
-      smoothedImg = imfilter(noisyImg, gaussKernel, 'replicate');
+      smoothedImg = imfilter(noisyImg, smoothKernel, 'replicate');
   end
 
   deNoisedImg = noisyImg;
