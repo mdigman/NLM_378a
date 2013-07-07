@@ -14,7 +14,7 @@ function runStuff
   
   imgFiles = { 'lena.png', 'boat.png', 'mandrill.png', 'barbara.png', ...
     'comedian.png' };
-  color = true;
+  color = false;
   noises = [ 8, 20, 25, 35, 40 ];
   noiseMean = 0;
 
@@ -102,6 +102,7 @@ function runStuff
           algorithmStr = [ algorithmStr, '_color' ];
           algorithmHandle = str2func( algorithmStr );
         else
+
         tic
         output = algorithmHandle(noisyImg, config);
         runtime = toc;

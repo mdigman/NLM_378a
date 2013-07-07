@@ -6,7 +6,7 @@ function output = deNoise2D_NLM_GW_Euc_modPrior( noisyImg, config )
   noiseSig = config.noiseSig;
   color = config.color;
 
-  lambda = 1;
+  lambda = 1d3;
 
   halfSearchSize = floor( searchSize/2 );
   halfKSize = floor( kSize/2 );

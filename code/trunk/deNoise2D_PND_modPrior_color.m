@@ -12,7 +12,7 @@ color = config.color;
 % hEuclidian = config.hEuclidian;
 % hSqEuclidian = hEuclidian^2;
 
-lambda = 1.0;
+lambda = 1d3;
 
 % eucDistsSq =  ones(window_edge,1)*((1:window_edge) -ceil(window_edge/2));
 % eucDistsSq = eucDistsSq.^2 + (eucDistsSq').^2;

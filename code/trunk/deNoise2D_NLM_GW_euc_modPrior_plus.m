@@ -6,7 +6,7 @@ function output = deNoise2D_NLM_GW_Euc_modPrior_plus( noisyImg, config )
   noiseSig = config.noiseSig;
   color = config.color;
 
-  lambda = 1;
+  lambda = 1d3;
 
   halfSearchSize = floor( searchSize/2 );
   halfKSize = floor( kSize/2 );
@@ -53,8 +53,6 @@ function output = deNoise2D_NLM_GW_Euc_modPrior_plus( noisyImg, config )
     end
   end
 
-  dists = zeros( searchSize, searchSize);
-
   %-- perform algorithm
   parfor j=borderSize:M-borderSize
     for i=borderSize:N-borderSize
@@ -82,6 +80,8 @@ function output = deNoise2D_NLM_GW_Euc_modPrior_plus( noisyImg, config )
         C = normxcorr2(corrKer, corrSearch);
       end
       C = C( 2*halfKSize+1:end-2*halfKSize, 2*halfKSize+1:end-2*halfKSize );
+
+      dists = zeros( searchSize, searchSize);
 
       for jP=0:searchSize-1
         for iP=0:searchSize-1

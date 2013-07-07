@@ -46,8 +46,6 @@ function output = deNoise2D_NLM_GW_Euc_plus( noisyImg, config )
     end
   end
 
-  dists = zeros( searchSize, searchSize);
-
   %-- perform algorithm
   parfor j=borderSize:M-borderSize
     for i=borderSize:N-borderSize
@@ -60,6 +58,8 @@ function output = deNoise2D_NLM_GW_Euc_plus( noisyImg, config )
           i-halfKSize:i+halfKSize );
       end
 
+      dists = zeros( searchSize, searchSize);
+      
       for jP=0:searchSize-1
         for iP=0:searchSize-1
           %disp(['(jP,iP): (',num2str(jP),',',num2str(iP),')']);

@@ -9,7 +9,7 @@ color = config.color;
 hEuclidian = config.hEuclidian;
 hSqEuclidian = hEuclidian^2;
 
-lambda = 1;
+lambda = 1d3;
 
 halfSearchSize = floor( searchSize/2 );
 halfKSize = floor( kSize/2 );

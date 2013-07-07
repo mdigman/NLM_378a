@@ -6,8 +6,8 @@ function output = deNoise2D_NLM_GW_modPrior( noisyImg, config )
   hSq = h*h;
   color = config.color;
 
-  lambda = 1;
-
+  lambda = 1d3;
+  
   halfSearchSize = floor( searchSize/2 );
   halfKSize = floor( kSize/2 );
 
