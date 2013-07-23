@@ -19,7 +19,7 @@ function output = deNoise2D_NLM_Euc_modPrior( noisyImg, config )
 
   a = 0.5*(kSize-1)/2;
   gaussKernel = fspecial('gaussian', kSize, a);
-  smoothKernel = fspecial('gaussian', kSize*2, 2*a );
+  smoothKernel = fspecial('gaussian', kSize, a );
   if color
       [M N C] = size( noisyImg );
       smoothedImg = noisyImg;

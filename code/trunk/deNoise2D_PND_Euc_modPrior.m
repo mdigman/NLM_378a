@@ -19,7 +19,7 @@ eucDistsSq = eucDistsSq.^2 + (eucDistsSq').^2;
 
 a = 0.5*(kernel_edge-1)/2;
 gaussKernel = fspecial('gaussian', kernel_edge, a);
-smoothKernel = fspecial('gaussian', kernel_edge*2, 2*a );
+smoothKernel = fspecial('gaussian', kernel_edge, a );
 if color
     [M N C] = size( noisyImg );
     smoothedImg = noisyImg;
